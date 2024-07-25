@@ -1,17 +1,22 @@
 package com.trainings.shoppingcartdemo.model;
 
+import jakarta.validation.constraints.Size;
+
 import java.math.BigDecimal;
 
 public class Product {
     private Integer id;
+    @Size(min = 3, max = 50, message = "Name must be mre than 3 characters.")
     private String name;
-    private String description;
-    private BigDecimal price;
 
-    public Product(Integer id, String name, String description, BigDecimal price) {
+    private String description;
+    private String category;
+    private BigDecimal price;
+    public Product(Integer id, String name, String description, String category,BigDecimal price) {
         this.id = id;
         this.name = name;
         this.description = description;
+        this.category = category;
         this.price = price;
     }
 
@@ -41,6 +46,14 @@ public class Product {
 
     public BigDecimal getPrice() {
         return price;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public void setPrice(BigDecimal price) {

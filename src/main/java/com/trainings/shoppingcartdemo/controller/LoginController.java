@@ -19,22 +19,17 @@ public class LoginController {
     }
 
     @RequestMapping(value = "login", method = RequestMethod.POST)
-    public String goWelcomePage(@RequestParam("username") String username,
+    public String goWelcomePageAfterLogin(@RequestParam("username") String username,
                                 @RequestParam("password") String password,
                                 ModelMap map,
                                 HttpSession session) {
-        if (authentication.checkValidAccount(username, password)) {
+        StringBuilder message = new StringBuilder();
+        if (authentication.checkValidAccount(username, password, message)) {
             map.put("messageLogin", null);
             session.setAttribute("username", username);
             return "welcome";
         }
-        map.put("messageLogin", "Wrong ID");
+        map.put("messageLogin", message.toString());
         return "login";
-    }
-
-
-    @RequestMapping(value = "welcome", method = RequestMethod.GET)
-    public String goWelcomePage() {
-        return "welcome";
     }
 }

@@ -1,5 +1,8 @@
 <html>
-    <title>Welcome to our Page</title>
+    <head>
+        <link href="webjars/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+        <title>Welcome to our Page</title>
+    </head>
     <body>
         <div>
             <h1>Please Login</h1>
@@ -7,16 +10,18 @@
                 <table>
                     <tr>
                         <td>Enter the account:</td>
-                        <td><input type="text" name="username"></td>
+                        <td><input type="text" name="username" required="required"></td>
                     </tr>
                     <tr>
                         <td>Enter the password:</td>
-                        <td><input type="password" name="password"></td>
+                        <td><input type="password" name="password" required="required"></td>
                     </tr>
                 </table>
-                <input type="submit" value="Login">
+                <input type="submit" value="Login" class="btn btn-success">
             </form>
             ${messageLogin}
         </div>
+        <script src="webjars/bootstrap/5.3.3/js/bootstrap.min.js"></script>
+        <script src="webjars/jquery/3.6.0/jquery.min.js"></script>
     </body>
 </html>
