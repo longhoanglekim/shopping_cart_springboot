@@ -24,6 +24,9 @@
                 <td>${product.description}</td>
                 <td>${product.category}</td>
                 <td>${product.price}</td>
+                <td>
+                    <a href="updateProduct?id=${product.id}" class="btn btn-success">Update</a>
+                </td>
             </tr>
         </c:forEach>
     </table>

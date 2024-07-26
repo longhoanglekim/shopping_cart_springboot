@@ -1,4 +1,4 @@
-package com.trainings.shoppingcartdemo.model;
+package com.trainings.shoppingcartdemo.models;
 
 import jakarta.validation.constraints.Size;
 

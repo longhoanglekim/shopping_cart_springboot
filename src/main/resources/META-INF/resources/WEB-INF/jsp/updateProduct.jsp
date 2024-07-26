@@ -2,13 +2,14 @@
 <html>
 <head>
     <link href="webjars/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
-    <title>Add product</title>
+    <title>Update product</title>
 </head>
 <header>
     <jsp:include page="header.jsp" flush="true"/>
 </header>
 <body>
 <div>
+    <h1>Update the details:</h1>
     <%--@elvariable id="product" type="com.trainings.shoppingcartdemo.models.Product"--%>
     <form:form method="post" modelAttribute="product">
         <table class="table">
@@ -29,7 +30,6 @@
                 <td>Price</td>
                 <td><form:input type="text" path="price" required="required"/></td>
             </tr>
-
         </table>
         <input type="submit" value="Submit" class="btn btn-success">
     </form:form>

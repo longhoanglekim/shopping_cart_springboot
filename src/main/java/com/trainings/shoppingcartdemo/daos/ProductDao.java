@@ -1,13 +1,13 @@
-package com.trainings.shoppingcartdemo.service;
+package com.trainings.shoppingcartdemo.daos;
 
-import com.trainings.shoppingcartdemo.model.Product;
+import com.trainings.shoppingcartdemo.models.Product;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 @Service
-public class ProductService {
+public class ProductDao {
     static int count = 0;
     private static List<Product> productList = new ArrayList<>();
     static {
@@ -22,5 +22,25 @@ public class ProductService {
 
     public void addProduct(String name, String description, String category,BigDecimal price) {
         productList.add(new Product(++count, name, description, category,price));
+    }
+
+    public Product getProductById(int id) {
+        for (Product product : productList) {
+            if (product.getId() == id) {
+                return product;
+            }
+        }
+        return null;
+    }
+
+    public void updateProduct(int id, String name, String description, String category, BigDecimal price) {
+        for (Product product : productList) {
+            if (product.getId() == id) {
+                product.setName(name);
+                product.setDescription(description);
+                product.setCategory(category);
+                product.setPrice(price);
+            }
+        }
     }
 }
