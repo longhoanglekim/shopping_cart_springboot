@@ -7,7 +7,6 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -30,7 +29,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)// Disable CSRF protection
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login","/welcome").permitAll() // Allow access to login and welcome-user pages without authentication
+                        .requestMatchers("/login","/welcome", "/logout-confirm").permitAll() // Allow access to login and welcome-user pages without authentication
                         .requestMatchers("/addProduct", "/updateProduct").authenticated() // Secure specific servlets
                         .anyRequest().permitAll() // Allow access to all other URLs
                 )
@@ -38,6 +37,14 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .defaultSuccessUrl("/welcome", true) // Redirect to welcome-user page after successful login
                         .permitAll()
+                )
+                .logout(logout ->
+                        logout
+                                .logoutUrl("/perform-logout") // URL để xử lý yêu cầu đăng xuất
+                                .logoutSuccessUrl("/logout-success") // URL để chuyển hướng sau khi đăng xuất thành công
+                                .invalidateHttpSession(true)
+                                .deleteCookies("JSESSIONID")
+                                .permitAll()
                 )
                 .httpBasic(Customizer.withDefaults());
         return http.build();

@@ -2,6 +2,7 @@ package com.trainings.shoppingcartdemo.controller;
 
 import com.trainings.shoppingcartdemo.configurations.SecurityConfig;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tags.shaded.org.apache.regexp.RE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,10 +14,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
 @Controller
 public class WelcomeController {
-    private static final Logger logger = LoggerFactory.getLogger(WelcomeController.class);
     private SecurityConfig securityConfig = new SecurityConfig();
 
     @RequestMapping(value = "welcome", method = RequestMethod.GET)

@@ -4,13 +4,14 @@ import com.trainings.shoppingcartdemo.models.Product;
 import com.trainings.shoppingcartdemo.daos.ProductDao;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-
+@Slf4j
 @SessionAttributes("productList")
 @Controller
 public class ProductController {
@@ -24,7 +25,7 @@ public class ProductController {
     @RequestMapping(value = "showProduct", method = RequestMethod.GET)
     public String goShowProductPage(HttpSession session,
                                     @RequestParam("category") String category) {
-        // System.out.println("Process " + category);
+        log.info("The user now is " + session.getAttribute("username"));
         session.setAttribute("category", category);
         session.setAttribute("productList", service.getProductList());
         return "showProduct";
