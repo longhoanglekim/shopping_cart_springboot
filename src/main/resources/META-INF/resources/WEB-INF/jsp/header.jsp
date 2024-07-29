@@ -8,7 +8,7 @@
 </head>
 <body>
 <nav class="navbar navbar-expand-md navbar-light bg-light mb-3 p-1">
-    <a class="navbar-brand m-1" href="https://courses.in28minutes.com">in28Minutes</a>
+    <a class="navbar-brand m-1" href="http://localhost:8080/welcome">LanMan</a>
     <div class="collapse navbar-collapse">
         <ul class="navbar-nav">
             <li class="nav-item"><a class="nav-link" href="welcome">Home</a></li>

@@ -1,62 +1,41 @@
 package com.trainings.shoppingcartdemo.models;
 
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.format.annotation.NumberFormat;
 
 import java.math.BigDecimal;
 
+@Setter
+@Getter
+@NoArgsConstructor
+@Entity(name = "products")
 public class Product {
-    private Integer id;
-    @Size(min = 3, max = 50, message = "Name must be mre than 3 characters.")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Size(min = 3, message = "Name must be more than 3 characters.")
+    @Size(max = 50, message = "Name must be less than 50 characters.")
     private String name;
 
     private String description;
     private String category;
+    @NumberFormat(pattern = "#,###.##")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than zero.")
+    @DecimalMax(value = "100000000.0", message = "Price must be less than 100000000.")
     private BigDecimal price;
-    public Product(Integer id, String name, String description, String category,BigDecimal price) {
-        this.id = id;
+
+    public Product(String name, String description, String category, BigDecimal price) {
         this.name = name;
         this.description = description;
         this.category = category;
-        this.price = price;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 

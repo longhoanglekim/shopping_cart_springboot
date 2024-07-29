@@ -29,7 +29,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)// Disable CSRF protection
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login","/welcome", "/logout-confirm").permitAll() // Allow access to login and welcome-user pages without authentication
+                        .requestMatchers("/login","/welcome","/h2-console/**").permitAll() // Allow access to login and welcome-user pages without authentication
                         .requestMatchers("/addProduct", "/updateProduct").authenticated() // Secure specific servlets
                         .anyRequest().permitAll() // Allow access to all other URLs
                 )
@@ -47,6 +47,8 @@ public class SecurityConfig {
                                 .permitAll()
                 )
                 .httpBasic(Customizer.withDefaults());
+        // Allow frames from the same origin to support H2 console
+        http.headers(headers -> headers.frameOptions().sameOrigin());
         return http.build();
     }
 }

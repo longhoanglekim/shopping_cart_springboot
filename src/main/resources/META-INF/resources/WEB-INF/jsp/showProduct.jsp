@@ -3,14 +3,14 @@
 <html>
 <head>
     <link href="webjars/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
-    <title>Show product</title>
+    <title>Show Product</title>
 </head>
 <header>
     <jsp:include page="header.jsp" flush="true"/>
 </header>
 <body>
 <div>
-    <h1>Hello world, ${username}</h1>
+    <h1>Hello world, ${sessionScope.username}</h1>
     <table class="table-bordered">
         <tr>
             <td>Name</td>

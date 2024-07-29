@@ -28,6 +28,7 @@
             <tr>
                 <td>Price</td>
                 <td><form:input type="text" path="price" required="required"/></td>
+                <td><form:errors path="price" cssClass="text-warning"/></td>
             </tr>
 
         </table>
