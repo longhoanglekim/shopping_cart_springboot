@@ -14,11 +14,11 @@ import java.util.List;
 
 @Slf4j
 @Controller
-public class ProductControllerJPA {
+public class ProductController {
 
     private final ProductRepository productRepository;
 
-    public ProductControllerJPA(ProductRepository productRepository) {
+    public ProductController(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
 
@@ -40,7 +40,7 @@ public class ProductControllerJPA {
         // Store product list in map
         map.put("productList", productList);
         log.debug("The category is: " + category);
-        log.debug("Product list in map: " + productList);
+//        log.debug("Product list in map: " + productList);
         return "showProduct";
     }
 
@@ -76,7 +76,7 @@ public class ProductControllerJPA {
         }
 
         map.put("productList", productList);
-        log.debug("Product list in session after refresh: " + productList);
+//        log.debug("Product list in session after refresh: " + productList);
 
         return "redirect:/showProduct?category=" + category;
     }

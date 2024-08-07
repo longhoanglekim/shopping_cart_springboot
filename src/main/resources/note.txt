@@ -1,3 +1,6 @@
 - Both ModelMap and HttpSession are used to store the data in the session.
     + ModelMap: It is used to pass the data between the controller and the view. -> temporary data.
     + HttpSession: It is used to store the data in the session. -> permanent data.
+- Export database :
+    + Export database: mysqldump -u root -p jusenuf > jusenuf.sql
+    + Import database: mysql -u root -p jusenuf < jusenuf.sql
