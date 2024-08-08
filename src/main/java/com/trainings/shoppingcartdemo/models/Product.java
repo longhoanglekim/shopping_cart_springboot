@@ -1,9 +1,6 @@
 package com.trainings.shoppingcartdemo.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,10 +24,18 @@ public class Product {
 
     private String description;
     private String category;
+
     @NumberFormat(pattern = "#,###.##")
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than zero.")
     @DecimalMax(value = "100000000.0", message = "Price must be less than 100000000.")
     private BigDecimal price;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id")
+    private Account account;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
 
     public Product(String name, String description, String category, BigDecimal price) {
         this.name = name;
@@ -39,13 +44,5 @@ public class Product {
         this.price = price;
     }
 
-    @Override
-    public String toString() {
-        return "Product{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", price=" + price +
-                '}';
-    }
+
 }

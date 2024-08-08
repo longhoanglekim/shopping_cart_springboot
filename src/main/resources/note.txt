@@ -4,3 +4,14 @@
 - Export database :
     + Export database: mysqldump -u root -p jusenuf > jusenuf.sql
     + Import database: mysql -u root -p jusenuf < jusenuf.sql
+ - Response Status for REST API
+    + Res not found : 404
+    + Server exception : 500
+    + Validation error : 400
+ - Important resource status :
+    + success : 200
+    + created : 201
+    + No content : 204
+    + Unauthorized : 401
+    + Bad request : 400
+    + Server not found : 500

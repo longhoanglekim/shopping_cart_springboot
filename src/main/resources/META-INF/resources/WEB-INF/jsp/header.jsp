@@ -11,15 +11,18 @@
     <a class="navbar-brand m-1" href="http://localhost:8080/welcome">LanMan</a>
     <div class="collapse navbar-collapse">
         <ul class="navbar-nav">
-            <li class="nav-item"><a class="nav-link" href="welcome">Home</a></li>
-            <li class="nav-item"><a class="nav-link" href="showProduct?category=all">All products</a></li>
+            <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/welcome">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/showListProduct/all">All products</a></li>
         </ul>
     </div>
     <div class="collapse navbar-collapse">
         <c:choose>
             <c:when test="${not empty username}">
                 <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link" href="welcome">${username}</a></li>
+                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/welcome">${username}</a></li>
+                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/shopping_cart">
+                        <img src="${pageContext.request.contextPath}/image/shopping-cart.png" alt="Shopping cart" width="35" height="30">
+                    </a></li>
                     <li class="nav-item"><a class="nav-link" href="logout">Logout</a></li>
                 </ul>
             </c:when>

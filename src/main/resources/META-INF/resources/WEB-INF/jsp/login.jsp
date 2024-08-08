@@ -5,7 +5,7 @@
     <title>Login page</title>
 </head>
 <body>
-<div>
+<div class="container">
     <h1>Please Login</h1>
     <form method="post">
         <table>

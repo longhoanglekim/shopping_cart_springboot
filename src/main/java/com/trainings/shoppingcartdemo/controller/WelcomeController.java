@@ -10,7 +10,7 @@ public class WelcomeController {
     public String goWelcomePage(HttpSession session) {
         // System.out.println(session.getAttribute("username"));
         session.setAttribute("username", session.getAttribute("username"));
-        return "welcome-user";
+        return "welcome_user";
     }
 
 

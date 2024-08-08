@@ -1,6 +1,8 @@
 package com.trainings.shoppingcartdemo.controller;
 
+import com.trainings.shoppingcartdemo.models.Account;
 import com.trainings.shoppingcartdemo.models.Product;
+import com.trainings.shoppingcartdemo.repositories.AccountRepository;
 import com.trainings.shoppingcartdemo.repositories.ProductRepository;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -17,14 +19,17 @@ import java.util.List;
 public class ProductController {
 
     private final ProductRepository productRepository;
+    private final AccountRepository accountRepository;
 
-    public ProductController(ProductRepository productRepository) {
+    public ProductController(ProductRepository productRepository, AccountRepository accountRepository) {
         this.productRepository = productRepository;
+        this.accountRepository = accountRepository;
     }
 
-    @GetMapping("showProduct")
-    public String goShowProductPage(HttpSession session,
-                                    @RequestParam("category") String category,
+    @GetMapping("showListProduct/{category}")
+    public String goShowlistProductPage(HttpSession session,
+                                    //@RequestParam("category") String category,
+                                    @PathVariable String category,
                                     ModelMap map) {
         log.debug("GET /showProduct");
 
@@ -41,7 +46,7 @@ public class ProductController {
         map.put("productList", productList);
         log.debug("The category is: " + category);
 //        log.debug("Product list in map: " + productList);
-        return "showProduct";
+        return "showListProduct";
     }
 
     @GetMapping("addProduct")
@@ -62,7 +67,8 @@ public class ProductController {
             log.error("Error in the form");
             return "addProduct";
         }
-
+        Account account = accountRepository.findByUsername((String) session.getAttribute("username"));
+        product.setAccount(account);
         log.debug("Product before saving: " + product);
         productRepository.save(product);
 
@@ -78,7 +84,7 @@ public class ProductController {
         map.put("productList", productList);
 //        log.debug("Product list in session after refresh: " + productList);
 
-        return "redirect:/showProduct?category=" + category;
+        return "redirect:/showProduct?/" + category;
     }
 
     @GetMapping("updateProduct")
@@ -99,6 +105,15 @@ public class ProductController {
         productRepository.save(product);
         String category = session.getAttribute("category").toString();
         map.put("productList", productRepository.findByCategory(category));
-        return "redirect:/showProduct?category=" + category;
+        return "redirect:/showListProduct/" + category;
+    }
+
+    @GetMapping("productInfo")
+    public String showProductInfo(@RequestParam(name = "id") String id,
+                                  ModelMap map) {
+        Product product = productRepository.findById(Long.parseLong(id)).get();
+        map.put("product", product);
+        log.debug("Get Show Info");
+        return "productInfo";
     }
 }

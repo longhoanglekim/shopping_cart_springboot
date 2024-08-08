@@ -33,12 +33,14 @@ public class LoginController {
         if (account != null) {
             log.debug("Find successfully");
             session.setAttribute("username", username);
-            return "welcome_user";
+            return "redirect:/welcome";
         }
         map.put("message", "Wrong ID");
         log.debug("Find failed");
         return "redirect:/login";
     }
+
+
 
 
 }
