@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.springframework.format.annotation.NumberFormat;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 
 @Setter
 @Getter
@@ -45,4 +46,22 @@ public class Product {
     }
 
 
+    public String getFormattedPrice() {
+        if (price == null) {
+            return "0.00";
+        }
+
+        // Kiểm tra phần thập phân
+        BigDecimal integerPart = price.setScale(0, BigDecimal.ROUND_DOWN);
+        BigDecimal fractionalPart = price.subtract(integerPart);
+
+        DecimalFormat decimalFormat;
+        if (fractionalPart.equals(BigDecimal.ZERO)) {
+            decimalFormat = new DecimalFormat("#,###");
+        } else {
+            decimalFormat = new DecimalFormat("#,###.##");
+        }
+
+        return decimalFormat.format(price);
+    }
 }

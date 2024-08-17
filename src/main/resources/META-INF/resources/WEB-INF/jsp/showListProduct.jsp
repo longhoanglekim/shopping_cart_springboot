@@ -27,7 +27,7 @@
                 </td>
 <%--                <td>${product.description}</td>--%>
                 <td>${product.category}</td>
-                <td>${product.price}</td>
+                <td>${product.getFormattedPrice()}</td>
             </tr>
         </c:forEach>
         </tbody>

@@ -19,7 +19,7 @@
         <c:choose>
             <c:when test="${not empty username}">
                 <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/welcome">${username}</a></li>
+                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/profile">${username}</a></li>
                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/shopping_cart">
                         <img src="${pageContext.request.contextPath}/image/shopping-cart.png" alt="Shopping cart" width="35" height="30">
                     </a></li>

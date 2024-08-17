@@ -26,7 +26,7 @@
             <th>${product.name}</th>
             <th>${product.description}</th>
             <th>${product.category}</th>
-            <th>${product.price}</th>
+            <th>${product.getFormattedPrice()} VND</th>
             <th>
                 <a href="${pageContext.request.contextPath}/updateProduct?id=${product.id}" class="btn btn-success">Update</a>
                 <form action="${pageContext.request.contextPath}/addProductToCart" method="post">

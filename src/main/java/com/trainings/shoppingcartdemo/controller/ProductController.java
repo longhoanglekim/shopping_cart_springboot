@@ -84,7 +84,7 @@ public class ProductController {
         map.put("productList", productList);
 //        log.debug("Product list in session after refresh: " + productList);
 
-        return "redirect:/showProduct?/" + category;
+        return "redirect:/showListProduct/" + category;
     }
 
     @GetMapping("updateProduct")

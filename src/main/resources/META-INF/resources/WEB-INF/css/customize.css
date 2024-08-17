@@ -1,0 +1,24 @@
+.quantity-selector .minus-btn,
+.quantity-selector .plus-btn {
+    width: 30px;
+    height: 30px;
+    background-color: #ddd;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    text-align: center;
+    line-height: 30px; /* Giúp dấu `+` và `-` nằm ở giữa theo chiều dọc */
+}
+
+
+.quantity-selector .minus-btn::after {
+    content: "-";
+}
+
+.quantity-selector .plus-btn::after {
+    content: "+";
+}
+
+#quantity {
+    width : 50px
+}
