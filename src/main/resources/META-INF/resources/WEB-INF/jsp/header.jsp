@@ -29,6 +29,7 @@
             <c:otherwise>
                 <ul class="navbar-nav">
                     <a href="login" class="nav-link">Login</a>
+                    <a href="register" class="nav-link">Register</a>
                 </ul>
             </c:otherwise>
         </c:choose>

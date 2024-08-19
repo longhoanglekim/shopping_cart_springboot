@@ -29,6 +29,9 @@ public class Account {
 
     @OneToMany(mappedBy = "account")
     private List<Order> orderList;
+    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    private AccountDetails accountDetail;
+
     public String getFormattedCash() {
         // Ensure cashInWallet is not null
         if (cashInWallet == null) {

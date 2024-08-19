@@ -6,18 +6,17 @@ import com.trainings.shoppingcartdemo.models.Product;
 import com.trainings.shoppingcartdemo.repositories.AccountRepository;
 import com.trainings.shoppingcartdemo.repositories.OrderRepository;
 import com.trainings.shoppingcartdemo.repositories.ProductRepository;
+import com.trainings.shoppingcartdemo.services.PriceFormattingService;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,11 +28,13 @@ public class OrderController {
     private final OrderRepository orderRepository;
     private final AccountRepository accountRepository;
     private final ProductRepository productRepository;
+    private PriceFormattingService formattingService;
 
-    public OrderController(OrderRepository orderRepository, AccountRepository accountRepository, ProductRepository productRepository) {
+    public OrderController(OrderRepository orderRepository, AccountRepository accountRepository, ProductRepository productRepository, PriceFormattingService formattingService) {
         this.orderRepository = orderRepository;
         this.accountRepository = accountRepository;
         this.productRepository = productRepository;
+        this.formattingService = formattingService;
     }
 
     /**
@@ -60,7 +61,9 @@ public class OrderController {
         for (Map.Entry<Product, Integer> entry: productMap.entrySet()) {
             totalVal = totalVal.add(entry.getKey().getPrice()).multiply(new BigDecimal(entry.getValue()));
         }
-        session.setAttribute("totalValue", totalVal);
+        // call api to format price
+
+        session.setAttribute("totalValue", formattingService.getFormattedPrice(totalVal) );
         if (session.getAttribute("productMap") == null)
             return "empty_cart";
         return "product_cart";

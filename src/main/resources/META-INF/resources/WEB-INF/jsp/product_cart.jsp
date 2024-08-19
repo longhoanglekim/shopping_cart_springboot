@@ -17,7 +17,7 @@
             <td>Number of products</td>
         </tr>
         <c:forEach items="${productMap}" var="product">
-            <tr>
+            <tr data-price="${product.key.price}">
                 <td>${product.key.name}</td>
                 <td>
                     <div class="quantity-selector">
@@ -37,7 +37,7 @@
 <footer>
     <div class="topnav">
         <div class="topnav-right">
-            <p>Total value : <span>${totalValue}</span></p>
+            <p>Total value : <span id="totalValue">${totalValue}</span></p>
             <a href="${pageContext.request.contextPath}/confirmOrder">Checkout</a>
         </div>
     </div>
@@ -46,7 +46,20 @@
 <script src="${pageContext.request.contextPath}/webjars/jquery/3.6.0/jquery.min.js"></script>
 <script>
     $(document).ready(function() {
-
+        function fetchFormattedPrice(price) {
+            $.ajax({
+                url: '/api/formatPrice',
+                method: 'GET',
+                data: { price: price },
+                success: function(response) {
+                    console.log("Formatted Price: " + response);
+                    $('#totalValue').text(response);  // Use the formatted price
+                },
+                error: function(xhr, status, error) {
+                    console.error("Failed to fetch formatted price");
+                }
+            });
+        }
         // Handle the plus button click
         $('.plus-btn').click(function() {
             var $input = $(this).closest('.quantity-selector').find('#quantity');
@@ -54,11 +67,17 @@
             $input.val(value + 1);  // Increment the quantity
 
             var productName = $(this).closest('tr').find('td:first').text();
+            // Corrected: Getting the current total value from the DOM and parsing it as a float
+            var currentTotal = parseFloat($('#totalValue').text().replace(/,/g, ''));
+            var productPrice = parseFloat($(this).closest('tr').data('price'));
+
+            // Calculate new total value
+            var newTotal = currentTotal + productPrice;
 
             updateQuantity(productName, value + 1);  // Update the quantity on the server
 
-            // Set #totalValue to 0.00 after clicking the plus button
-            $('#totalValue').text('0.00');
+            // Fetch formatted price based on the new total value
+            fetchFormattedPrice(newTotal);
         });
 
         // Handle the minus button click
@@ -79,6 +98,11 @@
                     updateQuantity(productName, 0);  // Update the quantity to 0 on the server
                 }
             }
+            var currentTotal = parseFloat($('#totalValue').text().replace(/,/g, ''));
+
+            var productPrice = parseFloat($(this).closest('tr').data('price'));
+            var newTotal = currentTotal - productPrice;
+            fetchFormattedPrice(newTotal);
         });
 
         // Function to update quantity on the server
