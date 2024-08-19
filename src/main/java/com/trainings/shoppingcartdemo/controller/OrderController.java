@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,13 +47,20 @@ public class OrderController {
         log.debug("GET CART PAGE");
         Order order;
         List<Product> productList;
+        Map<Product, Integer> productMap;
         if (!isInUpdateProcess) {
             order = findCurrentOrder(session);
             orderRepository.save(order);
             productList = productRepository.findByOrder(order);
-            Map<Product, Integer> productMap = getUnduplicatedProductList(productList);
+            productMap = getUnduplicatedProductList(productList);
             session.setAttribute("productMap", productMap);
         }
+        productMap = (HashMap<Product, Integer>) session.getAttribute("productMap");
+        BigDecimal totalVal = new BigDecimal(0);
+        for (Map.Entry<Product, Integer> entry: productMap.entrySet()) {
+            totalVal = totalVal.add(entry.getKey().getPrice()).multiply(new BigDecimal(entry.getValue()));
+        }
+        session.setAttribute("totalValue", totalVal);
         if (session.getAttribute("productMap") == null)
             return "empty_cart";
         return "product_cart";
@@ -85,7 +93,7 @@ public class OrderController {
         return order;
     }
 
-    Map<Product, Integer> getUnduplicatedProductList(List<Product> productList) {
+    private Map<Product, Integer> getUnduplicatedProductList(List<Product> productList) {
         Map<Product, Integer> map = new HashMap<>();
         for (Product product : productList) {
             if (map.containsKey(product)) {
@@ -121,9 +129,20 @@ public class OrderController {
         }
 
         session.setAttribute("productMap", cart);
+        BigDecimal totalVal = new BigDecimal(0);
+        for (Map.Entry<Product, Integer> entry: cart.entrySet()) {
+            totalVal = totalVal.add(entry.getKey().getPrice()).multiply(new BigDecimal(entry.getValue()));
+        }
+        log.debug("Total value: " + totalVal);
+        session.setAttribute("totalValue", totalVal);
         for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
             log.debug(entry.getKey().getName() + " :" + entry.getValue());
         }
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("totalValue", totalVal);
         return ResponseEntity.ok("{\"status\":\"success\"}");
     }
+
+
 }

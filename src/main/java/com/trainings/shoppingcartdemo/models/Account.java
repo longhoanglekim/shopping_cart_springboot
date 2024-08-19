@@ -1,7 +1,6 @@
 package com.trainings.shoppingcartdemo.models;
 
 import jakarta.persistence.*;
-import javassist.bytecode.annotation.LongMemberValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
