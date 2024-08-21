@@ -7,6 +7,7 @@ import com.trainings.shoppingcartdemo.repositories.ProductRepository;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
@@ -115,5 +116,13 @@ public class ProductController {
         map.put("product", product);
         log.debug("Get Show Info");
         return "productInfo";
+    }
+
+    @PostMapping("deleteProduct")
+    public ResponseEntity<String> deleteProduct(@RequestParam(name = "id") String id,
+                                                HttpSession session) {
+        log.debug("Delete product with id = " + id);
+        productRepository.deleteById(Long.parseLong(id));
+        return ResponseEntity.ok("{\"status\":\"success\"}");
     }
 }

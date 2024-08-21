@@ -38,7 +38,7 @@
     <div class="topnav">
         <div class="topnav-right">
             <p>Total value : <span id="totalValue">${totalValue}</span></p>
-            <a href="${pageContext.request.contextPath}/confirmOrder">Checkout</a>
+            <a href="${pageContext.request.contextPath}/confirmOrder">Confirm order</a>
         </div>
     </div>
 </footer>

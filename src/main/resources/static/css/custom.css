@@ -28,10 +28,6 @@ body {
     margin: 0;
     font-family: Arial, sans-serif;
 }
-body {
-    margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-}
 
 .topnav {
     overflow: hidden;
@@ -71,4 +67,14 @@ body {
 }
 #totalValue {
     color: lightgreen;
+}
+
+#productDescription {
+    color : #333333;
+    font-size : 10px;
+    margin-left: 10px;
+}
+
+#deliverPayment {
+    color : lightslategrey;
 }

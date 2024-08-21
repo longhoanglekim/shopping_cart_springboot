@@ -1,17 +1,14 @@
 package com.trainings.shoppingcartdemo.controller;
 
-import com.trainings.shoppingcartdemo.models.Account;
-import com.trainings.shoppingcartdemo.models.Order;
-import com.trainings.shoppingcartdemo.models.Product;
-import com.trainings.shoppingcartdemo.repositories.AccountRepository;
-import com.trainings.shoppingcartdemo.repositories.OrderRepository;
-import com.trainings.shoppingcartdemo.repositories.ProductRepository;
+import com.trainings.shoppingcartdemo.models.*;
+import com.trainings.shoppingcartdemo.repositories.*;
 import com.trainings.shoppingcartdemo.services.PriceFormattingService;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,13 +25,17 @@ public class OrderController {
     private final OrderRepository orderRepository;
     private final AccountRepository accountRepository;
     private final ProductRepository productRepository;
-    private PriceFormattingService formattingService;
+    private final AccountDetailsRepository accountDetailsRepository;
+    private final PriceFormattingService formattingService;
+    private final OrderDetailsRepository orderDetailsRepository;
 
-    public OrderController(OrderRepository orderRepository, AccountRepository accountRepository, ProductRepository productRepository, PriceFormattingService formattingService) {
+    public OrderController(OrderRepository orderRepository, AccountRepository accountRepository, ProductRepository productRepository, AccountDetailsRepository accountDetailsRepository, PriceFormattingService formattingService, OrderDetailsRepository orderDetailsRepository) {
         this.orderRepository = orderRepository;
         this.accountRepository = accountRepository;
         this.productRepository = productRepository;
+        this.accountDetailsRepository = accountDetailsRepository;
         this.formattingService = formattingService;
+        this.orderDetailsRepository = orderDetailsRepository;
     }
 
     /**
@@ -83,18 +84,7 @@ public class OrderController {
         return "redirect:/productInfo?id=" + id;
     }
 
-    private Order findCurrentOrder(HttpSession session) {
-        // Find the order with the maximum id for the given account
-        String username = (String) session.getAttribute("username");
-        Account account = accountRepository.findByUsername(username);
-        Order order = orderRepository.findByAccountAndIsCompletedFalse(account);
-        if (order == null) {
-            order = new Order();
-            session.setAttribute("order", order);
-            order.setAccount(account);
-        }
-        return order;
-    }
+
 
     private Map<Product, Integer> getUnduplicatedProductList(List<Product> productList) {
         Map<Product, Integer> map = new HashMap<>();
@@ -106,6 +96,17 @@ public class OrderController {
             }
         }
         return map;
+    }
+
+    @GetMapping("/confirmOrder")
+    public String goConfirmPage(HttpSession session,
+                                ModelMap map) {
+        Account account = accountRepository.findByUsername((String) session.getAttribute("username"));
+        AccountDetails accountDetails = accountDetailsRepository.findByAccountId(account.getId());
+        OrderDetails orderDetails = orderDetailsRepository.findByOrderId(findCurrentOrder(session).getId());
+        map.put("accountDetails", accountDetails);
+        map.put("orderDetails", orderDetails);
+        return "confirm_order";
     }
 
 
@@ -147,5 +148,18 @@ public class OrderController {
         return ResponseEntity.ok("{\"status\":\"success\"}");
     }
 
-
+    private Order findCurrentOrder(HttpSession session) {
+        // Find the order with the maximum id for the given account
+        String username = (String) session.getAttribute("username");
+        Account account = accountRepository.findByUsername(username);
+        Order order = orderRepository.findByAccountAndIsCompletedFalse(account);
+        if (order == null) {
+            order = new Order();
+            session.setAttribute("order", order);
+            order.setAccount(account);
+            order.setIsCompleted(false);
+            orderRepository.save(order);
+        }
+        return order;
+    }
 }

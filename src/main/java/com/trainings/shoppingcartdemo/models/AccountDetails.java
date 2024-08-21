@@ -15,8 +15,9 @@ public class AccountDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String fullName;
     private String address;
-
+    private String phoneNumber;
 
     @OneToOne
     @JoinColumn(name = "account_id", referencedColumnName = "id")

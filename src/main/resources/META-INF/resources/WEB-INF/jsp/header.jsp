@@ -8,7 +8,7 @@
 </head>
 <body>
 <nav class="navbar navbar-expand-md navbar-light bg-light mb-3 p-1">
-    <a class="navbar-brand m-1" href="http://localhost:8080/welcome">LanMan</a>
+    <a class="navbar-brand m-1" href="http://localhost:8080/welcome">JusEnuf</a>
     <div class="collapse navbar-collapse">
         <ul class="navbar-nav">
             <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/welcome">Home</a></li>
@@ -28,8 +28,8 @@
             </c:when>
             <c:otherwise>
                 <ul class="navbar-nav">
-                    <a href="login" class="nav-link">Login</a>
-                    <a href="register" class="nav-link">Register</a>
+                    <li><a href="login" class="nav-link">Login</a></li>
+                    <li><a href="register" class="nav-link">Register</a></li>
                 </ul>
             </c:otherwise>
         </c:choose>
