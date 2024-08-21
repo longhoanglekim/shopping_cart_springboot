@@ -49,7 +49,7 @@
             </table>
             <%--Todo : add deliver payment and checkout method --%>
             <div class="topnav-right">
-                <p>Deliver payment : <span id="deliverPayment">${orderDetails.deliverPayment}</span></p> <br>
+                <p id="pDeliverPayment">Deliver payment : <span id="deliverPayment">${orderDetails.deliverPayment}</span></p> <br>
                 <a href="/checkout" class="btn btn-success">Checkout</a>
             </div>
         </div>

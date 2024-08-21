@@ -2,6 +2,7 @@ package com.trainings.shoppingcartdemo.controller;
 
 import com.trainings.shoppingcartdemo.models.*;
 import com.trainings.shoppingcartdemo.repositories.*;
+import com.trainings.shoppingcartdemo.services.OrderService;
 import com.trainings.shoppingcartdemo.services.PriceFormattingService;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -28,14 +29,16 @@ public class OrderController {
     private final AccountDetailsRepository accountDetailsRepository;
     private final PriceFormattingService formattingService;
     private final OrderDetailsRepository orderDetailsRepository;
+    private final OrderService orderService;
 
-    public OrderController(OrderRepository orderRepository, AccountRepository accountRepository, ProductRepository productRepository, AccountDetailsRepository accountDetailsRepository, PriceFormattingService formattingService, OrderDetailsRepository orderDetailsRepository) {
+    public OrderController(OrderRepository orderRepository, AccountRepository accountRepository, ProductRepository productRepository, AccountDetailsRepository accountDetailsRepository, PriceFormattingService formattingService, OrderDetailsRepository orderDetailsRepository, OrderService orderService) {
         this.orderRepository = orderRepository;
         this.accountRepository = accountRepository;
         this.productRepository = productRepository;
         this.accountDetailsRepository = accountDetailsRepository;
         this.formattingService = formattingService;
         this.orderDetailsRepository = orderDetailsRepository;
+        this.orderService = orderService;
     }
 
     /**
@@ -47,26 +50,27 @@ public class OrderController {
     @GetMapping("/shopping_cart")
     public String goShoppingCartPage(HttpSession session) {
         log.debug("GET CART PAGE");
-        Order order;
-        List<Product> productList;
-        Map<Product, Integer> productMap;
-        if (!isInUpdateProcess) {
-            order = findCurrentOrder(session);
-            orderRepository.save(order);
-            productList = productRepository.findByOrder(order);
-            productMap = getUnduplicatedProductList(productList);
-            session.setAttribute("productMap", productMap);
-        }
-        productMap = (HashMap<Product, Integer>) session.getAttribute("productMap");
-        BigDecimal totalVal = new BigDecimal(0);
-        for (Map.Entry<Product, Integer> entry: productMap.entrySet()) {
-            totalVal = totalVal.add(entry.getKey().getPrice()).multiply(new BigDecimal(entry.getValue()));
-        }
-        // call api to format price
+        Order order = findCurrentOrder(session);
+        orderRepository.save(order);
+        session.setAttribute("order", order);
+        List<Product> productList = productRepository.findByOrder(order);
+        Map<Product, Integer> productMap = getUnduplicatedProductList(productList);
 
-        session.setAttribute("totalValue", formattingService.getFormattedPrice(totalVal) );
-        if (session.getAttribute("productMap") == null)
+        if (session.getAttribute("productMap") == null) {
+            session.setAttribute("productMap", productMap);
+        } else {
+            productMap = (Map<Product, Integer>) session.getAttribute("productMap");
+        }
+
+        BigDecimal totalVal = BigDecimal.ZERO;
+        for (Map.Entry<Product, Integer> entry : productMap.entrySet()) {
+            totalVal = totalVal.add(entry.getKey().getPrice().multiply(new BigDecimal(entry.getValue())));
+        }
+
+        session.setAttribute("totalValue", formattingService.getFormattedPrice(totalVal));
+        if (productMap.isEmpty()) {
             return "empty_cart";
+        }
         return "product_cart";
     }
 
@@ -77,9 +81,8 @@ public class OrderController {
 
         Order order = findCurrentOrder(session);
         Product product = productRepository.findById(Long.parseLong(id)).get();
-        product.setOrder(order);
-        orderRepository.save(order);
-        productRepository.save(product);
+        orderService.addProductToCart(order, product);
+        session.setAttribute("order", order);
         log.debug("POST /addProduct with id: " + id);
         return "redirect:/productInfo?id=" + id;
     }
@@ -117,13 +120,14 @@ public class OrderController {
         isInUpdateProcess = true;
         // Lấy giỏ hàng từ session
         Map<Product, Integer> cart = (Map<Product, Integer>) session.getAttribute("productMap");
-
+        Order order = (Order) session.getAttribute("order");
 
         // Tìm và cập nhật số lượng sản phẩm
         for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
             if (entry.getKey().getName().equals(productName)) {
                 if (quantity == 0) {
                     cart.remove(entry.getKey());  // Xóa sản phẩm nếu số lượng bằng 0
+                    orderService.removeProductFromCart(order, entry.getKey());
                 } else {
                     cart.put(entry.getKey(), quantity);  // Cập nhật số lượng mới
                     log.debug(String.valueOf(entry.getValue()));

@@ -23,7 +23,7 @@
                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/shopping_cart">
                         <img src="${pageContext.request.contextPath}/image/shopping-cart.png" alt="Shopping cart" width="35" height="30">
                     </a></li>
-                    <li class="nav-item"><a class="nav-link" href="logout">Logout</a></li>
+                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/logout">Logout</a></li>
                 </ul>
             </c:when>
             <c:otherwise>
