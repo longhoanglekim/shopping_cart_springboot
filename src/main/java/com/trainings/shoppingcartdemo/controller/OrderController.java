@@ -7,6 +7,7 @@ import com.trainings.shoppingcartdemo.services.PriceFormattingService;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
+import org.hibernate.Hibernate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,17 +52,23 @@ public class OrderController {
     @GetMapping("/shopping_cart")
     public String goShoppingCartPage(HttpSession session) {
         log.debug("GET CART PAGE");
-        Order order = findCurrentOrder(session);
-        orderRepository.save(order);
-        session.setAttribute("order", order);
-        List<Product> productList = productRepository.findByOrder(order);
+        Order order;
+        if (session.getAttribute("order") == null) {
+            log.debug("Order null");
+            order = findCurrentOrder(session);
+            orderRepository.save(order);
+            session.setAttribute("order", order);
+        } else {
+            log.debug("Existed!");
+            order = (Order) session.getAttribute("order");
+            for (Product product : order.getProductList()) {
+                log.debug(product.getName());
+            }
+        }
+        List<Product> productList = order.getProductList();
         Map<Product, Integer> productMap = getUnduplicatedProductList(productList);
 
-        if (session.getAttribute("productMap") == null) {
-            session.setAttribute("productMap", productMap);
-        } else {
-            productMap = (Map<Product, Integer>) session.getAttribute("productMap");
-        }
+        session.setAttribute("productMap", productMap);
 
         BigDecimal totalVal = BigDecimal.ZERO;
         for (Map.Entry<Product, Integer> entry : productMap.entrySet()) {
@@ -76,16 +84,17 @@ public class OrderController {
 
 
     @PostMapping("/addProductToCart")
-    public String addProductToCart(@RequestParam("id") String id,
-                                   HttpSession session) {
-
+    public String addProductToCart(@RequestParam("id") String id, HttpSession session) {
         Order order = findCurrentOrder(session);
-        Product product = productRepository.findById(Long.parseLong(id)).get();
-        orderService.addProductToCart(order, product);
-        session.setAttribute("order", order);
+        Product product = productRepository.findById(Long.parseLong(id)).orElse(null);
+        if (product != null) {
+            orderService.addProductToCart(order, product);
+            session.setAttribute("order", order);
+        }
         log.debug("POST /addProduct with id: " + id);
         return "redirect:/productInfo?id=" + id;
     }
+
 
 
 
@@ -128,6 +137,7 @@ public class OrderController {
                 if (quantity == 0) {
                     cart.remove(entry.getKey());  // Xóa sản phẩm nếu số lượng bằng 0
                     orderService.removeProductFromCart(order, entry.getKey());
+                    session.setAttribute("order", order);
                 } else {
                     cart.put(entry.getKey(), quantity);  // Cập nhật số lượng mới
                     log.debug(String.valueOf(entry.getValue()));
@@ -137,6 +147,8 @@ public class OrderController {
         }
 
         session.setAttribute("productMap", cart);
+        order.setProductList(convertMapToList(cart));
+        orderRepository.save(order);
         BigDecimal totalVal = new BigDecimal(0);
         for (Map.Entry<Product, Integer> entry: cart.entrySet()) {
             totalVal = totalVal.add(entry.getKey().getPrice()).multiply(new BigDecimal(entry.getValue()));
@@ -150,6 +162,16 @@ public class OrderController {
         response.put("status", "success");
         response.put("totalValue", totalVal);
         return ResponseEntity.ok("{\"status\":\"success\"}");
+    }
+
+    private List<Product> convertMapToList(Map<Product, Integer> cart) {
+        List<Product> productList = new ArrayList<>();
+        for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
+            for (int i = 0; i < entry.getValue(); i++) {
+                productList.add(entry.getKey());
+            }
+        }
+        return productList;
     }
 
     private Order findCurrentOrder(HttpSession session) {
