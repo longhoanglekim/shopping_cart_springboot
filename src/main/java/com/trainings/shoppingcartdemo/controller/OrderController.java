@@ -57,15 +57,11 @@ public class OrderController {
     public String goShoppingCartPage(HttpSession session) {
         log.debug("GET CART PAGE");
         Order order;
-        if (session.getAttribute("order") == null) {
-            log.debug("Order null");
-            order = findCurrentOrder(session);
-            orderRepository.save(order);
-            session.setAttribute("order", order);
-        } else {
-            log.debug("Existed!");
-            order = (Order) session.getAttribute("order");
-        }
+        order = findCurrentOrder(session);
+        orderRepository.save(order);
+        session.setAttribute("order", order);
+        order = (Order) session.getAttribute("order");
+
         List<Product> productList = order.getProductList();
         Map<Product, Integer> productMap = new HashMap<>();
         for (Product product : productList) {
