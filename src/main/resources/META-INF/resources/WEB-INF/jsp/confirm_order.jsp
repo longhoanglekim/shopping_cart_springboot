@@ -50,6 +50,7 @@
             <%--Todo : add deliver payment and checkout method --%>
             <div class="topnav-right">
                 <p id="pDeliverPayment">Deliver payment : <span id="deliverPayment">${orderDetails.deliverPayment}</span></p> <br>
+                <p>Total payment :<span id="totalPayment">${sessionScope.totalPayment}</span></p>
                 <a href="/checkout" class="btn btn-success">Checkout</a>
             </div>
         </div>

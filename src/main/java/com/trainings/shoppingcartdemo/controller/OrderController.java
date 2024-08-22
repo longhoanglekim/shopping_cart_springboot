@@ -65,9 +65,6 @@ public class OrderController {
         } else {
             log.debug("Existed!");
             order = (Order) session.getAttribute("order");
-            for (Product product : order.getProductList()) {
-                log.debug(product.getName() + orderProductService.getQuantityOfProductInOrder(order, product));
-            }
         }
         List<Product> productList = order.getProductList();
         Map<Product, Integer> productMap = new HashMap<>();
@@ -80,8 +77,9 @@ public class OrderController {
         for (Map.Entry<Product, Integer> entry : productMap.entrySet()) {
             totalVal = totalVal.add(entry.getKey().getPrice().multiply(new BigDecimal(entry.getValue())));
         }
-
+        BigDecimal totalPayment = totalVal.add(orderDetailsRepository.findByOrderId(order.getId()).getDeliverPayment());
         session.setAttribute("totalValue", formattingService.getFormattedPrice(totalVal));
+        session.setAttribute("totalPayment", totalPayment);
         if (productMap.isEmpty()) {
             return "empty_cart";
         }
@@ -159,6 +157,8 @@ public class OrderController {
         for (Map.Entry<Product, Integer> entry: cart.entrySet()) {
             totalVal = totalVal.add(entry.getKey().getPrice()).multiply(new BigDecimal(entry.getValue()));
         }
+        BigDecimal totalPayment = totalVal.add(orderDetailsRepository.findByOrderId(order.getId()).getDeliverPayment());
+        session.setAttribute("totalPayment", totalPayment);
         log.debug("Total value: " + totalVal);
         session.setAttribute("totalValue", totalVal);
         for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
