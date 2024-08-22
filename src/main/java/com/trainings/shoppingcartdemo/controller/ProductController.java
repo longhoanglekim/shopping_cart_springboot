@@ -1,19 +1,26 @@
 package com.trainings.shoppingcartdemo.controller;
 
 import com.trainings.shoppingcartdemo.models.Account;
+import com.trainings.shoppingcartdemo.models.Order;
 import com.trainings.shoppingcartdemo.models.Product;
 import com.trainings.shoppingcartdemo.repositories.AccountRepository;
+import com.trainings.shoppingcartdemo.repositories.OrderProductRepository;
+import com.trainings.shoppingcartdemo.repositories.OrderRepository;
 import com.trainings.shoppingcartdemo.repositories.ProductRepository;
+import com.trainings.shoppingcartdemo.services.OrderService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -21,10 +28,16 @@ public class ProductController {
 
     private final ProductRepository productRepository;
     private final AccountRepository accountRepository;
+    private final OrderRepository orderRepository;
+    private final OrderProductRepository orderProductRepository;
+    private final OrderService orderService;
 
-    public ProductController(ProductRepository productRepository, AccountRepository accountRepository) {
+    public ProductController(ProductRepository productRepository, AccountRepository accountRepository, OrderRepository orderRepository, OrderProductRepository orderProductRepository, OrderService orderService) {
         this.productRepository = productRepository;
         this.accountRepository = accountRepository;
+        this.orderRepository = orderRepository;
+        this.orderProductRepository = orderProductRepository;
+        this.orderService = orderService;
     }
 
     @GetMapping("showListProduct/{category}")
@@ -89,9 +102,13 @@ public class ProductController {
     }
 
     @GetMapping("updateProduct")
-    public String goUpdateProductPage(@RequestParam("id") Long id, ModelMap map) {
+    public String goUpdateProductPage(@RequestParam("id") Long id,
+                                      ModelMap map,
+                                      HttpSession session) {
         Product product = productRepository.findById(id).orElse(null);
         map.put("product", product);
+        session.setAttribute("currentOrder", product.getOrder());
+        session.setAttribute("currentAccount", product.getAccount());
         return "updateProduct";
     }
 
@@ -103,6 +120,8 @@ public class ProductController {
         if (result.hasErrors()) {
             return "updateProduct";
         }
+        product.setOrder((Order) session.getAttribute("currentOrder"));
+        product.setAccount((Account) session.getAttribute("currentAccount"));
         productRepository.save(product);
         String category = session.getAttribute("category").toString();
         map.put("productList", productRepository.findByCategory(category));
@@ -117,12 +136,22 @@ public class ProductController {
         log.debug("Get Show Info");
         return "productInfo";
     }
-
+    @Transactional
     @PostMapping("deleteProduct")
-    public ResponseEntity<String> deleteProduct(@RequestParam(name = "id") String id,
-                                                HttpSession session) {
+    public ResponseEntity<String> deleteProduct(@RequestParam(name = "id") String id, HttpSession session) {
         log.debug("Delete product with id = " + id);
-        productRepository.deleteById(Long.parseLong(id));
-        return ResponseEntity.ok("{\"status\":\"success\"}");
+        Optional<Product> product = productRepository.findById(Long.parseLong(id));
+        if (product.isPresent()) {
+            Product presentProduct = product.get();
+            // Manually delete related records in order_products table
+            if (presentProduct.getOrder() != null) {
+                orderService.removeProductFromCart(presentProduct.getOrder(), presentProduct);
+            }
+            orderProductRepository.deleteByProductId(presentProduct.getId());
+            productRepository.deleteById(presentProduct.getId());
+            return ResponseEntity.ok("Product deleted successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
+        }
     }
 }

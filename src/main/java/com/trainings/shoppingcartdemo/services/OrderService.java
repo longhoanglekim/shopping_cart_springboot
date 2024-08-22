@@ -1,7 +1,9 @@
 package com.trainings.shoppingcartdemo.services;
 
 import com.trainings.shoppingcartdemo.models.Order;
+import com.trainings.shoppingcartdemo.models.OrderProduct;
 import com.trainings.shoppingcartdemo.models.Product;
+import com.trainings.shoppingcartdemo.repositories.OrderProductRepository;
 import com.trainings.shoppingcartdemo.repositories.OrderRepository;
 import com.trainings.shoppingcartdemo.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,8 @@ public class OrderService {
     private OrderRepository orderRepository;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private OrderProductRepository orderProductRepository;
     public OrderService(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
     }
@@ -28,8 +32,13 @@ public class OrderService {
         productList.add(product);
         order.setProductList(productList);
         product.setOrder(order);
+        OrderProduct orderProduct = new OrderProduct();
+        orderProduct.setProduct(product);
+        orderProduct.setOrder(order);
+        orderProduct.setQuantity(1);
         orderRepository.save(order);
         productRepository.save(product);
+        orderProductRepository.save(orderProduct);
     }
 
 
@@ -40,4 +49,6 @@ public class OrderService {
         product.setOrder(null);
         productRepository.save(product);
     }
+
+
 }

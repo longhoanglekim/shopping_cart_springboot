@@ -69,7 +69,9 @@ public class OrderController {
         List<Product> productList = order.getProductList();
         Map<Product, Integer> productMap = new HashMap<>();
         for (Product product : productList) {
-            productMap.put(product, orderProductService.getQuantityOfProductInOrder(order, product));
+            if (orderProductService.getQuantityOfProductInOrder(order.getId(), product.getId()) > 0) {
+                productMap.put(product, orderProductService.getQuantityOfProductInOrder(order.getId(), product.getId()));
+            }
         }
         session.setAttribute("productMap", productMap);
 

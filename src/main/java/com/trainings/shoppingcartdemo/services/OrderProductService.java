@@ -12,8 +12,11 @@ public class OrderProductService {
     @Autowired
     private OrderProductRepository orderProductRepository;
 
-    public int getQuantityOfProductInOrder(Order order, Product product) {
-        OrderProduct orderProduct = orderProductRepository.findOrderProductByOrderIdAndProductId(order.getId(), product.getId());
+    public int getQuantityOfProductInOrder(Long orderId, Long productId) {
+        OrderProduct orderProduct = orderProductRepository.findOrderProductByOrderIdAndProductId(orderId, productId);
+        if (orderProduct == null) {
+            return 0; // or handle the null case appropriately
+        }
         return orderProduct.getQuantity();
     }
 
