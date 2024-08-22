@@ -2,12 +2,12 @@ package com.trainings.shoppingcartdemo.controller;
 
 import com.trainings.shoppingcartdemo.models.*;
 import com.trainings.shoppingcartdemo.repositories.*;
+import com.trainings.shoppingcartdemo.services.OrderProductService;
 import com.trainings.shoppingcartdemo.services.OrderService;
 import com.trainings.shoppingcartdemo.services.PriceFormattingService;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
-import org.hibernate.Hibernate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -32,8 +32,10 @@ public class OrderController {
     private final PriceFormattingService formattingService;
     private final OrderDetailsRepository orderDetailsRepository;
     private final OrderService orderService;
+    private final OrderProductService orderProductService;
+    private final OrderProductRepository orderProductRepository;
 
-    public OrderController(OrderRepository orderRepository, AccountRepository accountRepository, ProductRepository productRepository, AccountDetailsRepository accountDetailsRepository, PriceFormattingService formattingService, OrderDetailsRepository orderDetailsRepository, OrderService orderService) {
+    public OrderController(OrderRepository orderRepository, AccountRepository accountRepository, ProductRepository productRepository, AccountDetailsRepository accountDetailsRepository, PriceFormattingService formattingService, OrderDetailsRepository orderDetailsRepository, OrderService orderService, OrderProductService orderProductService, OrderProductRepository orderProductRepository) {
         this.orderRepository = orderRepository;
         this.accountRepository = accountRepository;
         this.productRepository = productRepository;
@@ -41,6 +43,8 @@ public class OrderController {
         this.formattingService = formattingService;
         this.orderDetailsRepository = orderDetailsRepository;
         this.orderService = orderService;
+        this.orderProductService = orderProductService;
+        this.orderProductRepository = orderProductRepository;
     }
 
     /**
@@ -62,12 +66,14 @@ public class OrderController {
             log.debug("Existed!");
             order = (Order) session.getAttribute("order");
             for (Product product : order.getProductList()) {
-                log.debug(product.getName());
+                log.debug(product.getName() + orderProductService.getQuantityOfProductInOrder(order, product));
             }
         }
         List<Product> productList = order.getProductList();
-        Map<Product, Integer> productMap = getUnduplicatedProductList(productList);
-
+        Map<Product, Integer> productMap = new HashMap<>();
+        for (Product product : productList) {
+            productMap.put(product, orderProductService.getQuantityOfProductInOrder(order, product));
+        }
         session.setAttribute("productMap", productMap);
 
         BigDecimal totalVal = BigDecimal.ZERO;
@@ -157,6 +163,13 @@ public class OrderController {
         session.setAttribute("totalValue", totalVal);
         for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
             log.debug(entry.getKey().getName() + " :" + entry.getValue());
+            OrderProduct orderProduct = orderProductRepository.findOrderProductByOrderIdAndProductId(order.getId(), entry.getKey().getId());
+            if (orderProduct == null) {
+                orderProduct = new OrderProduct(order, entry.getKey(), entry.getValue());
+            } else {
+                orderProduct.setQuantity(entry.getValue());
+            }
+            orderProductRepository.save(orderProduct);
         }
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");

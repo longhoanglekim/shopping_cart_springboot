@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface OrderProductRepository extends JpaRepository<OrderProduct, Long> {
     OrderProduct findOrderProductByOrderIdAndProductId(Long orderId, Long productId);
-    void deleteOrderProductByOrderAAndProduct(Order order, Product product);
+    void deleteOrderProductByOrderAndProduct(Order order, Product product);
 }
