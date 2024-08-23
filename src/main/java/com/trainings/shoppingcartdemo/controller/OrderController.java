@@ -8,12 +8,15 @@ import com.trainings.shoppingcartdemo.services.PriceFormattingService;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -84,19 +87,17 @@ public class OrderController {
         return "product_cart";
     }
 
-
     @PostMapping("/addProductToCart")
     public String addProductToCart(@RequestParam("id") String id, HttpSession session) {
         Order order = findCurrentOrder(session);
         Product product = productRepository.findById(Long.parseLong(id)).orElse(null);
-        if (product != null) {
+        if (product != null && !product.getOrder().equals(order)) {
             orderService.addProductToCart(order, product);
             session.setAttribute("order", order);
         }
         log.debug("POST /addProduct with id: " + id);
         return "redirect:/productInfo?id=" + id;
     }
-
 
 
 

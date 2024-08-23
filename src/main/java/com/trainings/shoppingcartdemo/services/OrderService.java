@@ -6,13 +6,14 @@ import com.trainings.shoppingcartdemo.models.Product;
 import com.trainings.shoppingcartdemo.repositories.OrderProductRepository;
 import com.trainings.shoppingcartdemo.repositories.OrderRepository;
 import com.trainings.shoppingcartdemo.repositories.ProductRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 
+@Slf4j
 @Service
 public class OrderService {
     @Autowired
@@ -24,7 +25,6 @@ public class OrderService {
     public OrderService(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
     }
-
 
     @Transactional
     public void addProductToCart(Order order, Product product) {
@@ -50,5 +50,10 @@ public class OrderService {
         productRepository.save(product);
     }
 
-
+    public boolean containsProduct(Order order, Product product) {
+        for (Product targetProduct : order.getProductList()) {
+            log.debug(targetProduct.getName());
+        }
+        return order.getProductList().contains(product);
+    }
 }
