@@ -27,7 +27,7 @@ import java.util.Map;
 @Slf4j
 @Controller
 public class OrderController {
-    static boolean isInUpdateProcess = false;
+
     private final OrderRepository orderRepository;
     private final AccountRepository accountRepository;
     private final ProductRepository productRepository;
@@ -50,22 +50,18 @@ public class OrderController {
         this.orderProductRepository = orderProductRepository;
     }
 
-    /**
-     *
-     * @param session HttpSession
-     *
-     * @return the list of the products if not null
-     */
     @GetMapping("/shopping_cart")
     public String goShoppingCartPage(HttpSession session) {
-        log.debug("GET CART PAGE");
-        Order order;
-        order = findCurrentOrder(session);
-        orderRepository.save(order);
+        String username = (String) session.getAttribute("username");
+        Account account = accountRepository.findByUsername(username);
+        Order order = orderRepository.findByAccountAndIsCompletedFalse(account);
+        if (order == null) {
+            order = orderService.createOrder(account);
+            session.setAttribute("order", order);
+            return "product_cart";
+        }
         session.setAttribute("order", order);
-        order = (Order) session.getAttribute("order");
-
-        List<Product> productList = order.getProductList();
+        List<Product> productList = orderService.getProductListOfAnOrder(order);
         Map<Product, Integer> productMap = new HashMap<>();
         for (Product product : productList) {
             if (orderProductService.getQuantityOfProductInOrder(order.getId(), product.getId()) > 0) {
@@ -78,12 +74,17 @@ public class OrderController {
         for (Map.Entry<Product, Integer> entry : productMap.entrySet()) {
             totalVal = totalVal.add(entry.getKey().getPrice().multiply(new BigDecimal(entry.getValue())));
         }
-        BigDecimal totalPayment = totalVal.add(orderDetailsRepository.findByOrderId(order.getId()).getDeliverPayment());
-        session.setAttribute("totalValue", formattingService.getFormattedPrice(totalVal));
-        session.setAttribute("totalPayment", totalPayment);
-        if (productMap.isEmpty()) {
-            return "empty_cart";
+
+        OrderDetails orderDetails = orderDetailsRepository.findByOrderId(order.getId());
+        BigDecimal deliverPayment = BigDecimal.ZERO;
+        if (orderDetails != null) {
+            deliverPayment = orderDetails.getDeliverPayment();
         }
+        BigDecimal totalPayment = totalVal.add(deliverPayment);
+        session.setAttribute("totalPayment", totalPayment);
+        session.setAttribute("totalValue", totalVal);
+
+        log.debug("Total value: " + totalVal);
         return "product_cart";
     }
 
@@ -94,16 +95,13 @@ public class OrderController {
         Product product = productRepository.findById(Long.parseLong(id)).orElse(null);
 
         if (product != null) {
-            if (product.getOrder() == null || !product.getOrder().equals(order)) {
-                orderService.addProductToCart(order, product);
+            if (!orderService.containsProduct(order, product)) {
+                orderService.addProductToCart(order, product, 1); // Assuming quantity 1 for simplicity
                 session.setAttribute("order", order);
             } else {
-                // Handle the case where the product is already in the order
-                // For example, you can log a message or return a specific response
                 log.debug("Product is already in the order");
             }
         } else {
-            // Handle the case where the product is not found
             log.debug("Product not found with id: " + id);
         }
 
@@ -111,20 +109,58 @@ public class OrderController {
         return "redirect:/productInfo?id=" + id;
     }
 
+    @PostMapping("/update-quantity")
+    public ResponseEntity<String> updateQuantity(@RequestParam String productName, @RequestParam int quantity, HttpSession session) {
+        Map<Product, Integer> cart = (Map<Product, Integer>) session.getAttribute("productMap");
+        Order order = (Order) session.getAttribute("order");
 
+        if (cart == null || order == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"status\":\"Cart or Order not found\"}");
+        }
 
-    private Map<Product, Integer> getUnduplicatedProductList(List<Product> productList) {
-        Map<Product, Integer> map = new HashMap<>();
-        for (Product product : productList) {
-            if (map.containsKey(product)) {
-                map.put(product, map.get(product) + 1);
-            } else {
-                map.put(product, 1);
+        Product targetProduct = null;
+        for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
+            if (entry.getKey().getName().equals(productName)) {
+                targetProduct = entry.getKey();
+                if (quantity == 0) {
+                    // Remove product from cart and order if quantity is set to 0
+                    cart.remove(targetProduct);
+                    orderService.removeProductFromCart(order, targetProduct);
+                } else {
+                    // Update the quantity in the cart
+                    cart.put(targetProduct, quantity);
+                }
+                break;
             }
         }
-        return map;
-    }
 
+        if (targetProduct != null) {
+            OrderProduct orderProduct = orderProductRepository.findOrderProductByOrderIdAndProductId(order.getId(), targetProduct.getId());
+            if (orderProduct != null) {
+                if (quantity == 0) {
+                    orderProductRepository.delete(orderProduct); // Remove the OrderProduct entity if the quantity is 0
+                } else {
+                    orderProduct.setQuantity(quantity); // Update the quantity in the OrderProduct entity
+                    orderProductRepository.save(orderProduct);
+                }
+            }
+        }
+
+        session.setAttribute("productMap", cart);
+
+        // Recalculate total value and total payment
+        BigDecimal totalVal = BigDecimal.ZERO;
+        for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
+            totalVal = totalVal.add(entry.getKey().getPrice().multiply(new BigDecimal(entry.getValue())));
+        }
+
+        BigDecimal totalPayment = totalVal.add(orderDetailsRepository.findByOrderId(order.getId()).getDeliverPayment());
+        session.setAttribute("totalPayment", totalPayment);
+        session.setAttribute("totalValue", totalVal);
+
+        log.debug("Total value: " + totalVal);
+        return ResponseEntity.ok("{\"status\":\"success\"}");
+    }
     @GetMapping("/confirmOrder")
     public String goConfirmPage(HttpSession session,
                                 ModelMap map) {
@@ -133,82 +169,21 @@ public class OrderController {
         OrderDetails orderDetails = orderDetailsRepository.findByOrderId(findCurrentOrder(session).getId());
         map.put("accountDetails", accountDetails);
         map.put("orderDetails", orderDetails);
+
         return "confirm_order";
     }
 
 
-    @PostMapping("/update-quantity")
-    public ResponseEntity<String> updateQuantity(@RequestParam String productName,
-                                                 @RequestParam int quantity,
-                                                 HttpSession session) {
-        isInUpdateProcess = true;
-        // Lấy giỏ hàng từ session
-        Map<Product, Integer> cart = (Map<Product, Integer>) session.getAttribute("productMap");
-        Order order = (Order) session.getAttribute("order");
-
-        // Tìm và cập nhật số lượng sản phẩm
-        for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
-            if (entry.getKey().getName().equals(productName)) {
-                if (quantity == 0) {
-                    cart.remove(entry.getKey());  // Xóa sản phẩm nếu số lượng bằng 0
-                    orderService.removeProductFromCart(order, entry.getKey());
-                    session.setAttribute("order", order);
-                } else {
-                    cart.put(entry.getKey(), quantity);  // Cập nhật số lượng mới
-                    log.debug(String.valueOf(entry.getValue()));
-                }
-                break;
-            }
-        }
-
-        session.setAttribute("productMap", cart);
-        order.setProductList(convertMapToList(cart));
-        orderRepository.save(order);
-        BigDecimal totalVal = new BigDecimal(0);
-        for (Map.Entry<Product, Integer> entry: cart.entrySet()) {
-            totalVal = totalVal.add(entry.getKey().getPrice()).multiply(new BigDecimal(entry.getValue()));
-        }
-        BigDecimal totalPayment = totalVal.add(orderDetailsRepository.findByOrderId(order.getId()).getDeliverPayment());
-        session.setAttribute("totalPayment", totalPayment);
-        log.debug("Total value: " + totalVal);
-        session.setAttribute("totalValue", totalVal);
-        for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
-            log.debug(entry.getKey().getName() + " :" + entry.getValue());
-            OrderProduct orderProduct = orderProductRepository.findOrderProductByOrderIdAndProductId(order.getId(), entry.getKey().getId());
-            if (orderProduct == null) {
-                orderProduct = new OrderProduct(order, entry.getKey(), entry.getValue());
-            } else {
-                orderProduct.setQuantity(entry.getValue());
-            }
-            orderProductRepository.save(orderProduct);
-        }
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", "success");
-        response.put("totalValue", totalVal);
-        return ResponseEntity.ok("{\"status\":\"success\"}");
-    }
-
-    private List<Product> convertMapToList(Map<Product, Integer> cart) {
-        List<Product> productList = new ArrayList<>();
-        for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
-            for (int i = 0; i < entry.getValue(); i++) {
-                productList.add(entry.getKey());
-            }
-        }
-        return productList;
-    }
-
     private Order findCurrentOrder(HttpSession session) {
-        // Find the order with the maximum id for the given account
         String username = (String) session.getAttribute("username");
         Account account = accountRepository.findByUsername(username);
         Order order = orderRepository.findByAccountAndIsCompletedFalse(account);
         if (order == null) {
             order = new Order();
-            session.setAttribute("order", order);
             order.setAccount(account);
-            order.setIsCompleted(false);
+            order.setCompleted(false);
             orderRepository.save(order);
+            session.setAttribute("order", order);
         }
         return order;
     }

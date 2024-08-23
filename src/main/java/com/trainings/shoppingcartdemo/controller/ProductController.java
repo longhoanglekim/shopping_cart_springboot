@@ -2,6 +2,7 @@ package com.trainings.shoppingcartdemo.controller;
 
 import com.trainings.shoppingcartdemo.models.Account;
 import com.trainings.shoppingcartdemo.models.Order;
+import com.trainings.shoppingcartdemo.models.OrderProduct;
 import com.trainings.shoppingcartdemo.models.Product;
 import com.trainings.shoppingcartdemo.repositories.AccountRepository;
 import com.trainings.shoppingcartdemo.repositories.OrderProductRepository;
@@ -83,7 +84,7 @@ public class ProductController {
         }
         Account account = accountRepository.findByUsername((String) session.getAttribute("username"));
         product.setAccount(account);
-        product.setOrder(null);
+        product.setOrderProducts(null);
         log.debug("Product before saving: " + product);
         productRepository.save(product);
 
@@ -108,7 +109,7 @@ public class ProductController {
                                       HttpSession session) {
         Product product = productRepository.findById(id).orElse(null);
         map.put("product", product);
-        session.setAttribute("currentOrder", product.getOrder());
+        session.setAttribute("currentOrdersProducts", product.getOrderProducts());
         session.setAttribute("currentAccount", product.getAccount());
         return "updateProduct";
     }
@@ -121,7 +122,7 @@ public class ProductController {
         if (result.hasErrors()) {
             return "updateProduct";
         }
-        product.setOrder((Order) session.getAttribute("currentOrder"));
+        product.setOrderProducts((List<OrderProduct>) session.getAttribute("currentOrder"));
         product.setAccount((Account) session.getAttribute("currentAccount"));
         productRepository.save(product);
         String category = session.getAttribute("category").toString();
@@ -142,17 +143,27 @@ public class ProductController {
     public ResponseEntity<String> deleteProduct(@RequestParam(name = "id") String id, HttpSession session) {
         log.debug("Delete product with id = " + id);
         Optional<Product> product = productRepository.findById(Long.parseLong(id));
+
         if (product.isPresent()) {
             Product presentProduct = product.get();
-            // Manually delete related records in order_products table
-            if (presentProduct.getOrder() != null) {
-                orderService.removeProductFromCart(presentProduct.getOrder(), presentProduct);
+
+            // Manually delete related records in the order_products table
+            List<OrderProduct> orderProducts = orderProductRepository.findAllByProductId(presentProduct.getId());
+
+            for (OrderProduct orderProduct : orderProducts) {
+                Order order = orderProduct.getOrder();
+                orderService.removeProductFromCart(order, presentProduct);
+                orderProductRepository.delete(orderProduct);
             }
-            orderProductRepository.deleteByProductId(presentProduct.getId());
+
+            // Finally, delete the product itself
             productRepository.deleteById(presentProduct.getId());
+
+            log.debug("Product and associated order products deleted successfully");
             return ResponseEntity.ok("Product deleted successfully");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
         }
     }
+
 }

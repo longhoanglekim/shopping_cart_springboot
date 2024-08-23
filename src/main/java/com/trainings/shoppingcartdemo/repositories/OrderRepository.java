@@ -11,4 +11,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByAccountId(Long accountId);
     // Find the order with the maximum id for the given account
     Order findByAccountAndIsCompletedFalse(Account account);
+
 }

@@ -9,6 +9,7 @@ import org.springframework.format.annotation.NumberFormat;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.List;
 
 @Setter
 @Getter
@@ -34,9 +35,9 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")
     private Account account;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
-    private Order order;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderProduct> orderProducts;
 
     public Product(String name, String description, String category, BigDecimal price) {
         this.name = name;
@@ -45,13 +46,11 @@ public class Product {
         this.price = price;
     }
 
-
     public String getFormattedPrice() {
         if (price == null) {
             return "0.00";
         }
 
-        // Kiểm tra phần thập phân
         BigDecimal integerPart = price.setScale(0, BigDecimal.ROUND_DOWN);
         BigDecimal fractionalPart = price.subtract(integerPart);
 
