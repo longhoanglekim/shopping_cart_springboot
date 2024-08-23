@@ -87,14 +87,26 @@ public class OrderController {
         return "product_cart";
     }
 
+    @Transactional
     @PostMapping("/addProductToCart")
     public String addProductToCart(@RequestParam("id") String id, HttpSession session) {
         Order order = findCurrentOrder(session);
         Product product = productRepository.findById(Long.parseLong(id)).orElse(null);
-        if (product != null && !product.getOrder().equals(order)) {
-            orderService.addProductToCart(order, product);
-            session.setAttribute("order", order);
+
+        if (product != null) {
+            if (product.getOrder() == null || !product.getOrder().equals(order)) {
+                orderService.addProductToCart(order, product);
+                session.setAttribute("order", order);
+            } else {
+                // Handle the case where the product is already in the order
+                // For example, you can log a message or return a specific response
+                log.debug("Product is already in the order");
+            }
+        } else {
+            // Handle the case where the product is not found
+            log.debug("Product not found with id: " + id);
         }
+
         log.debug("POST /addProduct with id: " + id);
         return "redirect:/productInfo?id=" + id;
     }

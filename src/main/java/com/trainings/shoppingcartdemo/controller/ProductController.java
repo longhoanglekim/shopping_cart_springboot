@@ -83,6 +83,7 @@ public class ProductController {
         }
         Account account = accountRepository.findByUsername((String) session.getAttribute("username"));
         product.setAccount(account);
+        product.setOrder(null);
         log.debug("Product before saving: " + product);
         productRepository.save(product);
 
