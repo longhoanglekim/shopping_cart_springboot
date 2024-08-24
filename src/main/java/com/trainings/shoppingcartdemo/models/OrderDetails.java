@@ -23,5 +23,5 @@ public class OrderDetails {
     @OneToOne
     @JoinColumn(name = "order_id", referencedColumnName = "id")
     private Order order;
-    private String state = String.valueOf(OrderState.PendingConfirmation);
+    private String state;
 }

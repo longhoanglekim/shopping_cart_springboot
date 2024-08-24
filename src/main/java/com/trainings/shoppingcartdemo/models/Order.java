@@ -24,7 +24,7 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<OrderProduct> orderProducts = new ArrayList<>();
 
-    private boolean isCompleted;
+    private boolean completed;
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private OrderDetails orderDetails;

@@ -1,10 +1,12 @@
 package com.trainings.shoppingcartdemo.controller;
 
+import com.trainings.shoppingcartdemo.enums.OrderState;
 import com.trainings.shoppingcartdemo.models.*;
 import com.trainings.shoppingcartdemo.repositories.*;
 import com.trainings.shoppingcartdemo.services.OrderProductService;
 import com.trainings.shoppingcartdemo.services.OrderService;
 import com.trainings.shoppingcartdemo.services.PriceFormattingService;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,21 +55,17 @@ public class OrderController {
 
     @GetMapping("/shopping_cart")
     public String goShoppingCartPage(HttpSession session) {
+        log.debug("GET /shopping_cart");
         String username = (String) session.getAttribute("username");
         Account account = accountRepository.findByUsername(username);
-        Order order = orderRepository.findByAccountAndIsCompletedFalse(account);
+        Order order = orderRepository.findByAccountAndCompletedFalse(account);
         if (order == null) {
             order = orderService.createOrder(account);
-            session.setAttribute("order", order);
-            return "product_cart";
         }
         session.setAttribute("order", order);
-        List<Product> productList = orderService.getProductListOfAnOrder(order);
-        Map<Product, Integer> productMap = new HashMap<>();
-        for (Product product : productList) {
-            if (orderProductService.getQuantityOfProductInOrder(order.getId(), product.getId()) > 0) {
-                productMap.put(product, orderProductService.getQuantityOfProductInOrder(order.getId(), product.getId()));
-            }
+        Map<Product, Integer> productMap = orderProductService.getProductMap(order);
+        if (productMap == null) {
+            productMap = new HashMap<>();
         }
         session.setAttribute("productMap", productMap);
 
@@ -164,6 +163,10 @@ public class OrderController {
     @GetMapping("/confirmOrder")
     public String goConfirmPage(HttpSession session,
                                 ModelMap map) {
+        log.debug("GET /confirmOrder");
+        if (findCurrentOrder(session).getOrderProducts().isEmpty()) {
+            return "redirect:/shopping_cart";
+        }
         Map<Product, Integer> productMap = (Map<Product, Integer>) session.getAttribute("productMap");
         for (Map.Entry<Product, Integer> entry : productMap.entrySet()) {
             int availableQuanity = productRepository.countProductByNameAndPrice(entry.getKey().getName(), entry.getKey().getPrice());
@@ -199,7 +202,25 @@ public class OrderController {
             }
         }
         order.setCompleted(true);
+        OrderDetails orderDetails = orderDetailsRepository.findByOrderId(order.getId());
+
+
         orderRepository.save(order);
+        String state = String.valueOf(OrderState.PendingConfirmation);
+        orderDetails.setState(state);
+        orderDetailsRepository.save(orderDetails);
+        log.debug(orderDetails.getState());
+        log.debug(orderDetails.getState());
+        List<Map<Product, Integer>> pendingList = getListProductMapByState(String.valueOf(OrderState.PendingConfirmation));
+        List<Map<Product, Integer>> processingList = getListProductMapByState(String.valueOf(OrderState.Processing));
+        List<Map<Product, Integer>> InTransitList = getListProductMapByState(String.valueOf(OrderState.InTransit));
+        List<Map<Product, Integer>> completedList = getListProductMapByState(String.valueOf(OrderState.Completed));
+        List<Map<Product, Integer>> canceledList = getListProductMapByState(String.valueOf(OrderState.Canceled));
+        session.setAttribute("pendingList", pendingList);
+        session.setAttribute("processingList", processingList);
+        session.setAttribute("InTransitList", InTransitList);
+        session.setAttribute("completedList", completedList);
+        session.setAttribute("canceledList", canceledList);
         return "orders";
     }
 
@@ -207,14 +228,24 @@ public class OrderController {
     private Order findCurrentOrder(HttpSession session) {
         String username = (String) session.getAttribute("username");
         Account account = accountRepository.findByUsername(username);
-        Order order = orderRepository.findByAccountAndIsCompletedFalse(account);
+        Order order = orderRepository.findByAccountAndCompletedFalse(account);
         if (order == null) {
-            order = new Order();
-            order.setAccount(account);
-            order.setCompleted(false);
-            orderRepository.save(order);
+            order = orderService.createOrder(account);
             session.setAttribute("order", order);
         }
         return order;
+    }
+
+    private List<Map<Product, Integer>> getListProductMapByState(String state) {
+        List<Map<Product, Integer>> mapList = new ArrayList<>();
+        List<OrderDetails> orderDetailsList = orderDetailsRepository.getOrderDetailsByState(state);
+        for (OrderDetails orderDetails : orderDetailsList) {
+            Order order = orderRepository.findByOrderDetails(orderDetails);
+            if (orderService.getProductListOfAnOrder(order).isEmpty()) {
+                continue;
+            }
+            mapList.add(orderProductService.getProductMap(order));
+        }
+        return mapList;
     }
 }

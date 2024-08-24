@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,10 +41,6 @@
         /* Danh sách đơn hàng */
         .order-list {
             display: none;
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
         }
 
         /* Các đơn hàng */
@@ -91,8 +88,32 @@
 </div>
 
 <div id="pending-confirmation" class="order-list">
-    <div class="order-item">Order #1123</div>
-    <div class="order-item">Order #1456</div>
+<%--    <div class="order-item">Order #1123</div>--%>
+<%--    <div class="order-item">Order #1456</div>--%>
+    <c:forEach var="productMap" items="${sessionScope.pendingList}">
+        <table class="table table-bordered">
+            <tr>
+                <td>Product Info</td>
+                <td>Price</td>
+                <td>Quantity</td>
+            </tr>
+            <c:forEach items="${productMap }" var="productPair" >
+                <c:if test="${productPair.key != null}">
+                    <tr>
+                        <td>
+                            <p>
+                                    ${productPair.key.name}
+                                <span id="productDescription">${productPair.key.description}</span>
+                            </p>
+                        </td>
+                        <td>${productPair.key.getFormattedPrice()}</td>
+                        <td>${productPair.value}</td>
+                    </tr>
+                </c:if>
+            </c:forEach>
+        </table>
+    </c:forEach>
+
 </div>
 
 <div id="completed" class="order-list">
