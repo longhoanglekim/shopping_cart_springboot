@@ -26,6 +26,7 @@ public class Product {
 
     private String description;
     private String category;
+    private boolean isPurchased = false;
 
     @NumberFormat(pattern = "#,###.##")
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than zero.")

@@ -16,10 +16,8 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +35,9 @@ public class OrderController {
     private final OrderService orderService;
     private final OrderProductService orderProductService;
     private final OrderProductRepository orderProductRepository;
+    private final PriceFormattingService priceFormattingService;
 
-    public OrderController(OrderRepository orderRepository, AccountRepository accountRepository, ProductRepository productRepository, AccountDetailsRepository accountDetailsRepository, PriceFormattingService formattingService, OrderDetailsRepository orderDetailsRepository, OrderService orderService, OrderProductService orderProductService, OrderProductRepository orderProductRepository) {
+    public OrderController(OrderRepository orderRepository, AccountRepository accountRepository, ProductRepository productRepository, AccountDetailsRepository accountDetailsRepository, PriceFormattingService formattingService, OrderDetailsRepository orderDetailsRepository, OrderService orderService, OrderProductService orderProductService, OrderProductRepository orderProductRepository, PriceFormattingService priceFormattingService) {
         this.orderRepository = orderRepository;
         this.accountRepository = accountRepository;
         this.productRepository = productRepository;
@@ -48,6 +47,7 @@ public class OrderController {
         this.orderService = orderService;
         this.orderProductService = orderProductService;
         this.orderProductRepository = orderProductRepository;
+        this.priceFormattingService = priceFormattingService;
     }
 
     @GetMapping("/shopping_cart")
@@ -81,8 +81,8 @@ public class OrderController {
             deliverPayment = orderDetails.getDeliverPayment();
         }
         BigDecimal totalPayment = totalVal.add(deliverPayment);
-        session.setAttribute("totalPayment", totalPayment);
-        session.setAttribute("totalValue", totalVal);
+        session.setAttribute("totalPayment", priceFormattingService.getFormattedPrice(totalPayment));
+        session.setAttribute("totalValue", priceFormattingService.getFormattedPrice(totalVal));
 
         log.debug("Total value: " + totalVal);
         return "product_cart";
@@ -155,8 +155,8 @@ public class OrderController {
         }
 
         BigDecimal totalPayment = totalVal.add(orderDetailsRepository.findByOrderId(order.getId()).getDeliverPayment());
-        session.setAttribute("totalPayment", totalPayment);
-        session.setAttribute("totalValue", totalVal);
+        session.setAttribute("totalPayment", priceFormattingService.getFormattedPrice(totalPayment));
+        session.setAttribute("totalValue", priceFormattingService.getFormattedPrice(totalVal));
 
         log.debug("Total value: " + totalVal);
         return ResponseEntity.ok("{\"status\":\"success\"}");
@@ -164,13 +164,43 @@ public class OrderController {
     @GetMapping("/confirmOrder")
     public String goConfirmPage(HttpSession session,
                                 ModelMap map) {
+        Map<Product, Integer> productMap = (Map<Product, Integer>) session.getAttribute("productMap");
+        for (Map.Entry<Product, Integer> entry : productMap.entrySet()) {
+            int availableQuanity = productRepository.countProductByNameAndPrice(entry.getKey().getName(), entry.getKey().getPrice());
+            log.debug(String.valueOf(availableQuanity));
+            if (availableQuanity < entry.getValue()) {
+                // Todo : Make notification here
+                return "product_cart";
+            }
+        }
         Account account = accountRepository.findByUsername((String) session.getAttribute("username"));
         AccountDetails accountDetails = accountDetailsRepository.findByAccountId(account.getId());
         OrderDetails orderDetails = orderDetailsRepository.findByOrderId(findCurrentOrder(session).getId());
         map.put("accountDetails", accountDetails);
         map.put("orderDetails", orderDetails);
-
+        session.setAttribute("deliverPayment", priceFormattingService.getFormattedPrice(orderDetails.getDeliverPayment()));
         return "confirm_order";
+    }
+    //Todo : set order to be completed and product is purchased
+    @GetMapping("/checkout")
+    public String checkout(HttpSession session) {
+        log.debug("Checkout");
+        Order order = (Order) session.getAttribute("order");
+        Map<Product, Integer> productMap = (Map<Product, Integer>) session.getAttribute("productMap");
+        for (Map.Entry<Product, Integer> entry : productMap.entrySet()) {
+            List<Product> productList = productRepository.getProductsByNameAndPrice(entry.getKey().getName(), entry.getKey().getPrice());
+            Product product = entry.getKey();
+            productList.remove(product);
+            product.setPurchased(true);
+            productRepository.save(product);
+            for (int i = 0; i < entry.getValue() - 1; i++) {
+                productList.get(i).setPurchased(true);
+                productRepository.save(productList.get(i));
+            }
+        }
+        order.setCompleted(true);
+        orderRepository.save(order);
+        return "orders";
     }
 
 
