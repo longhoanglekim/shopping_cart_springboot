@@ -1,5 +1,6 @@
 package com.trainings.shoppingcartdemo.models;
 
+import com.trainings.shoppingcartdemo.enums.OrderState;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,4 +23,5 @@ public class OrderDetails {
     @OneToOne
     @JoinColumn(name = "order_id", referencedColumnName = "id")
     private Order order;
+    private String state = String.valueOf(OrderState.PendingConfirmation);
 }

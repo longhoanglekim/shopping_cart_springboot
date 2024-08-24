@@ -58,13 +58,15 @@
         }
     </style>
 </head>
+<header>
+    <jsp:include page="header.jsp" flush="true" />
+ </header>
 <body>
 
 <!-- Thanh trạng thái đơn hàng -->
 <div class="order-status-bar">
     <div class="order-status active" onclick="showOrders('canceled')">Canceled</div>
     <div class="order-status" onclick="showOrders('in-transit')">In Transit</div>
-    <div class="order-status" onclick="showOrders('delivered')">Delivered</div>
     <div class="order-status" onclick="showOrders('processing')">Processing</div>
     <div class="order-status" onclick="showOrders('pending-confirmation')">Pending Confirmation</div>
     <div class="order-status" onclick="showOrders('completed')">Completed</div>
@@ -82,10 +84,6 @@
     <div class="order-item">Order #1121</div>
 </div>
 
-<div id="delivered" class="order-list">
-    <div class="order-item">Order #3141</div>
-    <div class="order-item">Order #5161</div>
-</div>
 
 <div id="processing" class="order-list">
     <div class="order-item">Order #7181</div>

@@ -5,6 +5,7 @@ import com.trainings.shoppingcartdemo.repositories.OrderDetailsRepository;
 import com.trainings.shoppingcartdemo.repositories.OrderProductRepository;
 import com.trainings.shoppingcartdemo.repositories.OrderRepository;
 import com.trainings.shoppingcartdemo.repositories.ProductRepository;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
+@AllArgsConstructor
 @Service
 public class OrderService {
     @Autowired
@@ -24,10 +26,6 @@ public class OrderService {
     private OrderProductRepository orderProductRepository;
     @Autowired
     private OrderDetailsRepository orderDetailsRepository;
-    public OrderService(OrderRepository orderRepository) {
-        this.orderRepository = orderRepository;
-    }
-
     public List<Product> getProductListOfAnOrder(Order order) {
         List<OrderProduct> orderProductList = orderProductRepository.findAllByOrder(order);
         List<Product> productList = new ArrayList<>();
@@ -83,24 +81,18 @@ public class OrderService {
 
     @Transactional
     public void removeProductFromCart(Order order, Product product) {
-        // Find the OrderProduct that links the given order and product
-        OrderProduct orderProduct = orderProductRepository.findOrderProductByOrderIdAndProductId(order.getId(), product.getId());
+        // Fetch the order and product with their collections initialized
+        order = orderRepository.findById(order.getId()).orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        product = productRepository.findById(product.getId()).orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
+        OrderProduct orderProduct = orderProductRepository.findOrderProductByOrderIdAndProductId(order.getId(), product.getId());
         if (orderProduct != null) {
-            // Remove the OrderProduct from both the order and product lists
             order.getOrderProducts().remove(orderProduct);
             product.getOrderProducts().remove(orderProduct);
-
-            // Delete the OrderProduct entity
-            orderProductRepository.delete(orderProduct);
-
-            // Save the updated order and product
+            orderProductRepository.deleteOrderProductByOrderAndProduct(order, product);
             orderRepository.save(order);
             productRepository.save(product);
-
-            log.info("Removed product {} from order {}", product.getName(), order.getId());
-        } else {
-            log.warn("Product {} not found in order {}", product.getName(), order.getId());
+            log.debug("Removed product from cart");
         }
     }
 
