@@ -184,7 +184,6 @@ public class OrderController {
         session.setAttribute("deliverPayment", priceFormattingService.getFormattedPrice(orderDetails.getDeliverPayment()));
         return "confirm_order";
     }
-    //Todo : set order to be completed and product is purchased
     @GetMapping("/checkout")
     public String checkout(HttpSession session) {
         log.debug("Checkout");
@@ -211,6 +210,22 @@ public class OrderController {
         orderDetailsRepository.save(orderDetails);
         log.debug(orderDetails.getState());
         log.debug(orderDetails.getState());
+        List<Map<Product, Integer>> pendingList = getListProductMapByState(String.valueOf(OrderState.PendingConfirmation));
+        List<Map<Product, Integer>> processingList = getListProductMapByState(String.valueOf(OrderState.Processing));
+        List<Map<Product, Integer>> InTransitList = getListProductMapByState(String.valueOf(OrderState.InTransit));
+        List<Map<Product, Integer>> completedList = getListProductMapByState(String.valueOf(OrderState.Completed));
+        List<Map<Product, Integer>> canceledList = getListProductMapByState(String.valueOf(OrderState.Canceled));
+        session.setAttribute("pendingList", pendingList);
+        session.setAttribute("processingList", processingList);
+        session.setAttribute("InTransitList", InTransitList);
+        session.setAttribute("completedList", completedList);
+        session.setAttribute("canceledList", canceledList);
+        return "redirect:/orders";
+    }
+
+    @GetMapping("/orders")
+    public String goOrdersPage(HttpSession session) {
+        log.debug("GET /orders");
         List<Map<Product, Integer>> pendingList = getListProductMapByState(String.valueOf(OrderState.PendingConfirmation));
         List<Map<Product, Integer>> processingList = getListProductMapByState(String.valueOf(OrderState.Processing));
         List<Map<Product, Integer>> InTransitList = getListProductMapByState(String.valueOf(OrderState.InTransit));
