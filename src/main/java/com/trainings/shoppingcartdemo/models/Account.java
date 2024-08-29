@@ -21,6 +21,8 @@ public class Account {
     private Long id;
     private String username;
     private String password;
+    private String role;
+    private boolean enabled;
     @Column(name = "cash_in_wallet", nullable = false)
     private BigDecimal cashInWallet = BigDecimal.ZERO;
 

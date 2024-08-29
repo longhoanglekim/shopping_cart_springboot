@@ -67,29 +67,93 @@
     <div class="order-status" onclick="showOrders('processing')">Processing</div>
     <div class="order-status" onclick="showOrders('pending-confirmation')">Pending Confirmation</div>
     <div class="order-status" onclick="showOrders('completed')">Completed</div>
-    <div class="order-status" onclick="showOrders('preparing')">Preparing</div>
 </div>
 
 <!-- Order lists -->
 <div id="canceled" class="order-list active">
-    <div class="order-item">Order #1234</div>
-    <div class="order-item">Order #5678</div>
+    <c:forEach var="productMap" items="${sessionScope.canceledList}">
+        <table class="table table-bordered">
+            <tr>
+                <td>Product Info</td>
+                <td>Price</td>
+                <td>Quantity</td>
+            </tr>
+            <c:forEach items="${productMap }" var="productPair" >
+                <c:if test="${productPair.key != null}">
+                    <tr>
+                        <td>
+                            <p>
+                                    ${productPair.key.name}
+                                <span id="productDescription">${productPair.key.description}</span>
+                            </p>
+                        </td>
+                        <td>${productPair.key.getFormattedPrice()}</td>
+                        <td>${productPair.value}</td>
+                    </tr>
+                </c:if>
+            </c:forEach>
+        </table>
+    </c:forEach>
 </div>
 
 <div id="in-transit" class="order-list">
     <div class="order-item">Order #9101</div>
     <div class="order-item">Order #1121</div>
+    <c:forEach var="productMap" items="${sessionScope.inTransitList}">
+        <table class="table table-bordered">
+            <tr>
+                <td>Product Info</td>
+                <td>Price</td>
+                <td>Quantity</td>
+            </tr>
+            <c:forEach items="${productMap }" var="productPair" >
+                <c:if test="${productPair.key != null}">
+                    <tr>
+                        <td>
+                            <p>
+                                    ${productPair.key.name}
+                                <span id="productDescription">${productPair.key.description}</span>
+                            </p>
+                        </td>
+                        <td>${productPair.key.getFormattedPrice()}</td>
+                        <td>${productPair.value}</td>
+                    </tr>
+                </c:if>
+            </c:forEach>
+        </table>
+    </c:forEach>
 </div>
 
 
 <div id="processing" class="order-list">
     <div class="order-item">Order #7181</div>
     <div class="order-item">Order #9202</div>
+    <c:forEach var="productMap" items="${sessionScope.processingList}">
+        <table class="table table-bordered">
+            <tr>
+                <td>Product Info</td>
+                <td>Price</td>
+                <td>Quantity</td>
+            </tr>
+            <c:forEach items="${productMap }" var="productPair" >
+                <c:if test="${productPair.key != null}">
+                    <tr>
+                        <td>
+                            <p>
+                                    ${productPair.key.name}
+                                <span id="productDescription">${productPair.key.description}</span>
+                            </p>
+                        </td>
+                        <td>${productPair.key.getFormattedPrice()}</td>
+                        <td>${productPair.value}</td>
+                    </tr>
+                </c:if>
+            </c:forEach>
+        </table>
+    </c:forEach>
 </div>
 
 <div id="pending-confirmation" class="order-list">
-<%--    <div class="order-item">Order #1123</div>--%>
-<%--    <div class="order-item">Order #1456</div>--%>
     <c:forEach var="productMap" items="${sessionScope.pendingList}">
         <table class="table table-bordered">
             <tr>
@@ -119,12 +183,31 @@
 <div id="completed" class="order-list">
     <div class="order-item">Order #7890</div>
     <div class="order-item">Order #1233</div>
+    <c:forEach var="productMap" items="${sessionScope.completedList}">
+        <table class="table table-bordered">
+            <tr>
+                <td>Product Info</td>
+                <td>Price</td>
+                <td>Quantity</td>
+            </tr>
+            <c:forEach items="${productMap }" var="productPair" >
+                <c:if test="${productPair.key != null}">
+                    <tr>
+                        <td>
+                            <p>
+                                    ${productPair.key.name}
+                                <span id="productDescription">${productPair.key.description}</span>
+                            </p>
+                        </td>
+                        <td>${productPair.key.getFormattedPrice()}</td>
+                        <td>${productPair.value}</td>
+                    </tr>
+                </c:if>
+            </c:forEach>
+        </table>
+    </c:forEach>
 </div>
 
-<div id="preparing" class="order-list">
-    <div class="order-item">Order #2334</div>
-    <div class="order-item">Order #3455</div>
-</div>
 
 <script>
     function showOrders(status) {

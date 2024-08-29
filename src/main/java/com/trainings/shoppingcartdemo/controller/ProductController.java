@@ -29,20 +29,18 @@ public class ProductController {
 
     private final ProductRepository productRepository;
     private final AccountRepository accountRepository;
-    private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
     private final OrderService orderService;
 
-    public ProductController(ProductRepository productRepository, AccountRepository accountRepository, OrderRepository orderRepository, OrderProductRepository orderProductRepository, OrderService orderService) {
+    public ProductController(ProductRepository productRepository, AccountRepository accountRepository, OrderProductRepository orderProductRepository, OrderService orderService) {
         this.productRepository = productRepository;
         this.accountRepository = accountRepository;
-        this.orderRepository = orderRepository;
         this.orderProductRepository = orderProductRepository;
         this.orderService = orderService;
     }
 
     @GetMapping("showListProduct/{category}")
-    public String goShowlistProductPage(HttpSession session,
+    public String goShowListProductPage(HttpSession session,
                                     //@RequestParam("category") String category,
                                     @PathVariable String category,
                                     ModelMap map) {
@@ -57,7 +55,8 @@ public class ProductController {
         } else {
             productList = productRepository.findByCategory(category);
         }
-        // Store product list in map
+        productList.removeIf(Product::isPurchased);
+        // Store product list in List
         map.put("productList", productList);
         log.debug("The category is: " + category);
 //        log.debug("Product list in map: " + productList);
@@ -98,8 +97,6 @@ public class ProductController {
         }
 
         map.put("productList", productList);
-//        log.debug("Product list in session after refresh: " + productList);
-
         return "redirect:/showListProduct/" + category;
     }
 
@@ -146,8 +143,6 @@ public class ProductController {
 
         if (product.isPresent()) {
             Product presentProduct = product.get();
-
-            // Manually delete related records in the order_products table
             List<OrderProduct> orderProducts = orderProductRepository.findAllByProductId(presentProduct.getId());
 
             for (OrderProduct orderProduct : orderProducts) {
@@ -155,10 +150,7 @@ public class ProductController {
                 orderService.removeProductFromCart(order, presentProduct);
                 orderProductRepository.delete(orderProduct);
             }
-
-            // Finally, delete the product itself
             productRepository.deleteById(presentProduct.getId());
-
             log.debug("Product and associated order products deleted successfully");
             return ResponseEntity.ok("Product deleted successfully");
         } else {

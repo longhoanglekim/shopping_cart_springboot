@@ -33,7 +33,6 @@ public class OrderController {
     private final AccountRepository accountRepository;
     private final ProductRepository productRepository;
     private final AccountDetailsRepository accountDetailsRepository;
-    private final PriceFormattingService formattingService;
     private final OrderDetailsRepository orderDetailsRepository;
     private final OrderService orderService;
     private final OrderProductService orderProductService;
@@ -45,7 +44,6 @@ public class OrderController {
         this.accountRepository = accountRepository;
         this.productRepository = productRepository;
         this.accountDetailsRepository = accountDetailsRepository;
-        this.formattingService = formattingService;
         this.orderDetailsRepository = orderDetailsRepository;
         this.orderService = orderService;
         this.orderProductService = orderProductService;
@@ -122,11 +120,9 @@ public class OrderController {
             if (entry.getKey().getName().equals(productName)) {
                 targetProduct = entry.getKey();
                 if (quantity == 0) {
-                    // Remove product from cart and order if quantity is set to 0
                     cart.remove(targetProduct);
                     orderService.removeProductFromCart(order, targetProduct);
                 } else {
-                    // Update the quantity in the cart
                     cart.put(targetProduct, quantity);
                 }
                 break;
@@ -147,7 +143,6 @@ public class OrderController {
 
         session.setAttribute("productMap", cart);
 
-        // Recalculate total value and total payment
         BigDecimal totalVal = BigDecimal.ZERO;
         for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
             totalVal = totalVal.add(entry.getKey().getPrice().multiply(new BigDecimal(entry.getValue())));
@@ -210,6 +205,11 @@ public class OrderController {
         orderDetailsRepository.save(orderDetails);
         log.debug(orderDetails.getState());
         log.debug(orderDetails.getState());
+        loadOrderListByState(session);
+        return "redirect:/orders";
+    }
+
+    private void loadOrderListByState(HttpSession session) {
         List<Map<Product, Integer>> pendingList = getListProductMapByState(String.valueOf(OrderState.PendingConfirmation));
         List<Map<Product, Integer>> processingList = getListProductMapByState(String.valueOf(OrderState.Processing));
         List<Map<Product, Integer>> InTransitList = getListProductMapByState(String.valueOf(OrderState.InTransit));
@@ -217,25 +217,15 @@ public class OrderController {
         List<Map<Product, Integer>> canceledList = getListProductMapByState(String.valueOf(OrderState.Canceled));
         session.setAttribute("pendingList", pendingList);
         session.setAttribute("processingList", processingList);
-        session.setAttribute("InTransitList", InTransitList);
+        session.setAttribute("inTransitList", InTransitList);
         session.setAttribute("completedList", completedList);
         session.setAttribute("canceledList", canceledList);
-        return "redirect:/orders";
     }
 
     @GetMapping("/orders")
     public String goOrdersPage(HttpSession session) {
         log.debug("GET /orders");
-        List<Map<Product, Integer>> pendingList = getListProductMapByState(String.valueOf(OrderState.PendingConfirmation));
-        List<Map<Product, Integer>> processingList = getListProductMapByState(String.valueOf(OrderState.Processing));
-        List<Map<Product, Integer>> InTransitList = getListProductMapByState(String.valueOf(OrderState.InTransit));
-        List<Map<Product, Integer>> completedList = getListProductMapByState(String.valueOf(OrderState.Completed));
-        List<Map<Product, Integer>> canceledList = getListProductMapByState(String.valueOf(OrderState.Canceled));
-        session.setAttribute("pendingList", pendingList);
-        session.setAttribute("processingList", processingList);
-        session.setAttribute("InTransitList", InTransitList);
-        session.setAttribute("completedList", completedList);
-        session.setAttribute("canceledList", canceledList);
+        loadOrderListByState(session);
         return "orders";
     }
 

@@ -49,7 +49,7 @@ public class Product {
 
     public String getFormattedPrice() {
         if (price == null) {
-            return "0.00";
+            return "0.00 VND";
         }
 
         BigDecimal integerPart = price.setScale(0, BigDecimal.ROUND_DOWN);
@@ -62,6 +62,6 @@ public class Product {
             decimalFormat = new DecimalFormat("#,###.##");
         }
 
-        return decimalFormat.format(price);
+        return decimalFormat.format(price) + " VND";
     }
 }
