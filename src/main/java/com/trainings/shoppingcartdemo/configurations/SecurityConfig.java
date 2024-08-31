@@ -27,17 +27,18 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login","/welcome", "/register").permitAll() // Allow access to login and welcome-user pages without authentication
                         .requestMatchers("/addProduct", "/updateProduct", "/addProductToCart", "/shopping_cart", "/orders", "/deleteProduct").authenticated() // Secure specific servlets
-                        .anyRequest().permitAll() // Allow access to all other URLs
+                        .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
                         .defaultSuccessUrl("/welcome", true) // Redirect to welcome-user page after successful login
+                        .failureUrl("/login?error=true")
                         .permitAll()
                 )
                 .logout(logout ->
                         logout
-                                .logoutUrl("/perform-logout") // URL để xử lý yêu cầu đăng xuất
-                                .logoutSuccessUrl("/logout-success") // URL để chuyển hướng sau khi đăng xuất thành công
+                                .logoutUrl("/logout")
+                                .logoutSuccessUrl("/welcome")
                                 .invalidateHttpSession(true)
                                 .deleteCookies("JSESSIONID")
                                 .permitAll()

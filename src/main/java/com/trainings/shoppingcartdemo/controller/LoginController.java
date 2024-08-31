@@ -28,20 +28,4 @@ public class LoginController {
         return "login";
     }
 
-    @PostMapping("login")
-    public String validateLogin(@RequestParam("username") String username,
-                                @RequestParam("password") String password,
-                                HttpSession session,
-                                ModelMap map) {
-
-        Account account = accountRepository.findByUsername(username);
-        if (account != null && passwordEncoder.matches(password, account.getPassword())) {
-            log.debug("Find successfully");
-            session.setAttribute("username", username);
-            return "redirect:/welcome";
-        }
-        map.put("message", "Wrong ID or password");
-        log.debug("Find failed");
-        return "redirect:/login";
-    }
 }

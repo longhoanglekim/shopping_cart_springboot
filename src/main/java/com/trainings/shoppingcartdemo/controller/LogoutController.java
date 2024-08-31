@@ -17,16 +17,4 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 public class LogoutController {
 
-    @GetMapping("/logout")
-    public String logout() {
-        log.debug("Get logout");
-        return "logout_confirm";
-    }
-
-    @PostMapping("/logout")
-    public String logoutPost(HttpServletRequest request, HttpServletResponse response) {
-        log.debug("POST /logout");
-        request.getSession().invalidate();
-        return "redirect:/login";
-    }
 }
