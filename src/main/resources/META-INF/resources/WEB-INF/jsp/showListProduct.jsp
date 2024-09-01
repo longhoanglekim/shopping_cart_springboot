@@ -1,4 +1,4 @@
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+z<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <html>
 <head>
@@ -10,7 +10,6 @@
 </header>
 <body>
 <div class="container">
-    <h1>Hello world, ${sessionScope.username}</h1>
     <table class="table table-bordered">
         <thead>
         <tr>

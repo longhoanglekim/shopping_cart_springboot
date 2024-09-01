@@ -57,8 +57,13 @@ public class SearchController {
             log.debug("Selected item: " + item);
         }
         map.put("keyword", keyword);
-        map.put("bestShop", accountRepository.search(keyword).get(0));
-        map.put("productList", productRepository.search(keyword));
+        if (!accountRepository.search(keyword).isEmpty()) {
+            map.put("bestShop", accountRepository.search(keyword).get(0));
+        }
+        List<Product> products = productRepository.search(keyword);
+        if (!products.isEmpty()) {
+            map.put("productList", products);
+        }
         return "search";
     }
 
