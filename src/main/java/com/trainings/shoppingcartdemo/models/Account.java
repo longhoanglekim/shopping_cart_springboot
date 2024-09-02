@@ -1,5 +1,6 @@
 package com.trainings.shoppingcartdemo.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,6 +28,7 @@ public class Account {
     private BigDecimal cashInWallet = BigDecimal.ZERO;
 
     @OneToMany(mappedBy = "account", orphanRemoval = false)
+    @JsonBackReference
     private List<Product> productList;
 
     @OneToMany(mappedBy = "account")
@@ -37,7 +39,7 @@ public class Account {
     public String getFormattedCash() {
         // Ensure cashInWallet is not null
         if (cashInWallet == null) {
-            return "0.00";
+            return "0.00 VND";
         }
 
         // Kiểm tra phần thập phân

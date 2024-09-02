@@ -1,5 +1,8 @@
 package com.trainings.shoppingcartdemo.models;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
@@ -9,6 +12,7 @@ import org.springframework.format.annotation.NumberFormat;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 @Setter
@@ -33,11 +37,13 @@ public class Product {
     @DecimalMax(value = "100000000.0", message = "Price must be less than 100000000.")
     private BigDecimal price;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "account_id")
+    @JsonIgnore
     private Account account;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<OrderProduct> orderProducts;
 
     public Product(String name, String description, String category, BigDecimal price) {

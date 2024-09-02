@@ -41,7 +41,6 @@ public class ProductController {
 
     @GetMapping("showListProduct/{category}")
     public String goShowListProductPage(HttpSession session,
-                                    //@RequestParam("category") String category,
                                     @PathVariable String category,
                                     ModelMap map) {
         log.debug("GET /showProduct");
@@ -54,6 +53,10 @@ public class ProductController {
             productList = productRepository.findAll();
         } else {
             productList = productRepository.findByCategory(category);
+        }
+        log.debug("Size of list " + productList.size());
+        for (Product p : productList) {
+            log.debug(p.getName());
         }
         productList.removeIf(Product::isPurchased);
         // Store product list in List
@@ -157,5 +160,4 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
         }
     }
-
 }

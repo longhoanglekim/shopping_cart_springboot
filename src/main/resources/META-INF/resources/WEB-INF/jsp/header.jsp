@@ -67,10 +67,13 @@
 <script>
     let selectedStrings = [];
     let suggestedItems = [];
+    let itemClicked = false;  // Thêm biến để theo dõi nếu item đã được chọn
 
     document.getElementById('searchInput').addEventListener('input', function () {
-        const query = this.value;
+        query = this.value;
         document.getElementById('keyword').value = query;
+        itemClicked = false;  // Reset trạng thái khi người dùng nhập mới
+        console.log("Keyword is : " + query);
         if (query.length > 0) {
             fetch(`/api/search/searchSuggestions?keyword=` + query)
                 .then(response => response.json())
@@ -86,10 +89,13 @@
                             const li = document.createElement('li');
                             li.textContent = item;
                             li.addEventListener('click', function() {
-                                selectedStrings.push(item);
+                                document.getElementById('keyword').value = item;
+                                // Khi item được click, chỉ add item đó vào selectedStrings
+                                selectedStrings = [item];
+                                suggestedItems = [item];
                                 document.getElementById('searchInput').value = item;
+                                itemClicked = true;  // Đánh dấu rằng item đã được chọn
                                 findList.style.display = 'none';
-                                document.getElementById('selectedItems').value = selectedStrings.join(',');
                             });
                             findList.appendChild(li);
                         });
@@ -104,11 +110,11 @@
     });
 
     document.querySelector('form.d-flex').addEventListener('submit', function () {
-        // Add all suggested items to selectedStrings before submitting the form
-        selectedStrings = [...new Set([...selectedStrings, ...suggestedItems])];
+        if (!itemClicked) {  // Chỉ khi không có item cụ thể nào được chọn, dùng toàn bộ suggestedItems
+            selectedStrings = [...new Set([...suggestedItems])];
+        }
         document.getElementById('selectedItems').value = selectedStrings.join(',');
     });
-
 </script>
 </body>
 </html>

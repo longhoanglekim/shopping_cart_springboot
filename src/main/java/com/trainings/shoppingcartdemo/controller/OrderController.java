@@ -164,7 +164,7 @@ public class OrderController {
         }
         Map<Product, Integer> productMap = (Map<Product, Integer>) session.getAttribute("productMap");
         for (Map.Entry<Product, Integer> entry : productMap.entrySet()) {
-            int availableQuanity = productRepository.countProductByNameAndPrice(entry.getKey().getName(), entry.getKey().getPrice());
+            int availableQuanity = productRepository.countProductByNameAndPriceAndAccount(entry.getKey().getName(), entry.getKey().getPrice(), entry.getKey().getAccount());
             log.debug(String.valueOf(availableQuanity));
             if (availableQuanity < entry.getValue()) {
                 // Todo : Make notification here

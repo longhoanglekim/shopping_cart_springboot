@@ -58,6 +58,9 @@ public class SearchController {
         }
         map.put("keyword", keyword);
         if (!accountRepository.search(keyword).isEmpty()) {
+            if (accountRepository.search(keyword).size() > 1) {
+                map.put("moreThan1", true);
+            }
             map.put("bestShop", accountRepository.search(keyword).get(0));
         }
         List<Product> products = productRepository.search(keyword);

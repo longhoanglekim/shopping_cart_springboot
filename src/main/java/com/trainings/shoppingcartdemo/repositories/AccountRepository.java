@@ -10,6 +10,6 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     Account findByUsernameAndPassword(String username, String password);
     Account findByUsername(String username);
 
-    @Query("select a from accounts a where a.username like lower(concat('%',:keyword, '%'))")
+    @Query("select a from accounts a where a.username LIKE lower(concat('% ', :keyword, '%')) OR lower(a.username) LIKE lower(concat('', :keyword, '%'))")
     List<Account> search(String keyword);
 }

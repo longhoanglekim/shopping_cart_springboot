@@ -42,14 +42,21 @@
             flex-wrap: wrap;
             gap: 50px;
         }
+
         .product-item {
             background-color: white;
             padding: 10px;
             flex: 1 1 calc(33.333% - 20px); /* Độ rộng linh hoạt */
-            max-width: calc(25% - 50px); /* Độ rộng tối đa */
+            max-width: calc(25% - 50px);
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center; /* Canh giữa nội dung */
+            text-align: center;
+        }
+
+        .shopList {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 300px;
         }
     </style>
 </head>
@@ -62,7 +69,16 @@
         <p>Search filter</p>
     </div>
     <div class="right-div">
-        <p>Search result for '<span class="keyword">${keyword}</span>'</p>
+        <div class="shopList">
+            <div>
+                <p style="flex-grow: 1; margin: 0;">Search result for '<span class="keyword">${keyword}</span>'</p>
+            </div>
+            <c:if test="${moreThan1}">
+                <div>
+                    <a href="/moreShops" class="link-underline" style="margin-left: 20px;">More shops</a>
+                </div>
+            </c:if>
+        </div>
         <c:choose>
             <c:when test="${not empty bestShop}">
                 <div class="item-container">
@@ -77,22 +93,29 @@
         </c:choose>
         <div style="margin-top: 20px">
 
-        <c:choose>
-            <c:when test="${not empty productList}">
-                <div class="product-grid">
-                    <c:forEach var="product" items="${productList}">
-                        <div class="product-item">
-                            <h4>${product.name}</h4>
-                            <p>${product.getFormattedPrice()}</p>
-                        </div>
-                    </c:forEach>
-                </div>
-            </c:when>
-            <c:otherwise>
-                <div class="item-container">
-                    <p>No product for '<span class="keyword">${keyword}</span>'</p>
-                </div>
-            </c:otherwise>
+            <c:choose>
+                <c:when test="${not empty productList}">
+                    <div class="product-grid">
+
+                        <c:forEach var="product" items="${productList}">
+                            <div class="product-item">
+                                <a href="${pageContext.request.contextPath}/productInfo?id=${product.id}">
+                                    <div>
+                                        <h4>${product.name}</h4>
+                                        <p>${product.getFormattedPrice()}</p>
+                                    </div>
+                                </a>
+                            </div>
+
+                        </c:forEach>
+
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="item-container">
+                        <p>No product for '<span class="keyword">${keyword}</span>'</p>
+                    </div>
+                </c:otherwise>
             </c:choose>
 
         </div>
