@@ -22,7 +22,7 @@ function getProductListByCategory(category) {
                         productElement.classList.add("product-element");
                         productElement.innerHTML = `<h3>${product.name}</h3>
                                                     <p>${product.description}</p>
-                                                    <p>${product.price} VND</p>`;
+                                                    <p>${product.getFormattedPrice()} VND</p>`;
                         productContainer.appendChild(productElement);
                     });
                 } else {

@@ -9,7 +9,7 @@ public class PriceFormattingService {
 
     public String getFormattedPrice(BigDecimal price) {
         if (price == null) {
-            return "0.00 VND";
+            return "0.00";
         }
 
         BigDecimal integerPart = price.setScale(0, BigDecimal.ROUND_DOWN);
@@ -22,6 +22,6 @@ public class PriceFormattingService {
             decimalFormat = new DecimalFormat("#,###.##");
         }
 
-        return decimalFormat.format(price) + " VND";
+        return decimalFormat.format(price);
     }
 }

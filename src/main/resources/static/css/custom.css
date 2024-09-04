@@ -22,11 +22,9 @@
 #quantity {
     width : 50px
 }
-
-
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
+.page {
+    background-color: lightgrey;
+    width: 100%
 }
 
 .topnav {
@@ -86,4 +84,9 @@ body {
 
 #totalPayment {
     color : lightslategrey;
+}
+
+.container {
+    min-height: 100vh;
+    background-color: lightgrey;
 }

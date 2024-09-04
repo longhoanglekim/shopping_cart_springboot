@@ -26,7 +26,7 @@ z<%@ taglib prefix="c" uri="jakarta.tags.core" %>
                 </td>
 <%--                <td>${product.description}</td>--%>
                 <td>${product.category}</td>
-                <td>${product.getFormattedPrice()}</td>
+                <td>${product.getFormattedPrice()} <span>VND</span></td>
             </tr>
         </c:forEach>
         </tbody>

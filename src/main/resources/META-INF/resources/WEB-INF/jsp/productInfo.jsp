@@ -26,7 +26,7 @@
             <th>${product.name}</th>
             <th>${product.description}</th>
             <th>${product.category}</th>
-            <th>${product.getFormattedPrice()} VND</th>
+            <th>${product.getFormattedPrice()}</th>
             <th>
                 <div style="margin-bottom: 10px">
                     <a href="${pageContext.request.contextPath}/updateProduct?id=${product.id}" class="btn btn-success">Update</a>

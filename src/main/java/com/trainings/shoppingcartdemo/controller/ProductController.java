@@ -6,9 +6,10 @@ import com.trainings.shoppingcartdemo.models.OrderProduct;
 import com.trainings.shoppingcartdemo.models.Product;
 import com.trainings.shoppingcartdemo.repositories.AccountRepository;
 import com.trainings.shoppingcartdemo.repositories.OrderProductRepository;
-import com.trainings.shoppingcartdemo.repositories.OrderRepository;
 import com.trainings.shoppingcartdemo.repositories.ProductRepository;
 import com.trainings.shoppingcartdemo.services.OrderService;
+import com.trainings.shoppingcartdemo.utils.PriceUtil;
+import com.trainings.shoppingcartdemo.utils.PriceUtil;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +33,7 @@ public class ProductController {
     private final AccountRepository accountRepository;
     private final OrderProductRepository orderProductRepository;
     private final OrderService orderService;
+    private final PriceUtil priceUtil = new PriceUtil();
 
     public ProductController(ProductRepository productRepository, AccountRepository accountRepository, OrderProductRepository orderProductRepository, OrderService orderService) {
         this.productRepository = productRepository;
@@ -111,6 +114,7 @@ public class ProductController {
         map.put("product", product);
         session.setAttribute("currentOrdersProducts", product.getOrderProducts());
         session.setAttribute("currentAccount", product.getAccount());
+        log.debug(product.getPrice().toString());
         return "updateProduct";
     }
 
@@ -119,7 +123,9 @@ public class ProductController {
                                 BindingResult result,
                                 ModelMap map, HttpSession session) {
         log.debug("POST /updateProduct");
+        log.debug(product.getPrice().toString());
         if (result.hasErrors()) {
+            log.debug(result.getAllErrors().toString());
             return "updateProduct";
         }
         product.setOrderProducts((List<OrderProduct>) session.getAttribute("currentOrder"));
