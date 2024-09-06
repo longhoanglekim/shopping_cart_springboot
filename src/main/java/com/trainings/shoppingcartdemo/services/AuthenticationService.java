@@ -38,7 +38,7 @@ public class AuthenticationService {
 
     public Account authenticate(LoginDto input) {
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(input.getUsername(), input.getPassword()
+                new UsernamePasswordAuthenticationToken(input.getUsername(),  input.getPassword()
                 )
         );
         if (userRepository.findByUsername(input.getUsername()) == null) {
