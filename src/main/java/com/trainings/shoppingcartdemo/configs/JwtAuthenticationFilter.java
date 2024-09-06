@@ -1,6 +1,5 @@
 package com.trainings.shoppingcartdemo.configs;
 
-
 import com.trainings.shoppingcartdemo.security.jwt.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

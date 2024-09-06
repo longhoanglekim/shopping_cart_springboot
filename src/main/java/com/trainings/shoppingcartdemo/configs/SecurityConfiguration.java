@@ -37,7 +37,7 @@ public class SecurityConfiguration {
         http
                 .csrf(csrf -> csrf.disable()) // Disable CSRF protection
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/login", "/welcome", "/register", "/WEB-INF/jsp/**").permitAll()  // Allow JWT auth and login/register endpoints
+                        .requestMatchers("/auth/**", "/login", "/welcome", "/register", "/jsp/**").permitAll()  // Allow JWT auth and login/register endpoints
                         .requestMatchers("/addProduct", "/updateProduct", "/addProductToCart", "/shopping_cart", "/orders", "/deleteProduct").authenticated()  // Secure specific servlets
                         .anyRequest().authenticated()) // Other requests require authentication
                 .sessionManagement(session -> session

@@ -20,26 +20,36 @@
 <script>
     document.getElementById('loginForm').addEventListener('submit', async function(event) {
         event.preventDefault();
+
+        // Lấy dữ liệu từ form
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
 
-        const response = await fetch('http://localhost:8080/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        });
+        try {
+            const response = await fetch('http://localhost:8080/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
 
-        if (response.ok) {
-            const data = await response.json();
-            alert('Login successful! Token: ' + data.token);
-            // Save the token in localStorage or cookies
-            localStorage.setItem('token', data.token);
-        } else {
-            alert('Login failedddd!');
+            if (response.ok) {
+                const data = await response.json();
+                alert('Login successful! Token: ' + data.token);
+
+                // Lưu JWT vào localStorage để sử dụng sau này
+                localStorage.setItem('token', data.token);
+
+                // Redirect tới trang khác sau khi đăng nhập thành công
+                window.location.href = '/welcome';
+            } else {
+                const errorData = await response.json();
+                alert('Login failed! ' + errorData.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Login failed! Please check the console for more information.');
         }
     });
 </script>
-</body>
-</html>
