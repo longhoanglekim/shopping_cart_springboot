@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface AccountRepository extends JpaRepository<Account, Long> {
+    List<Account> findAll();
     Account findByUsernameAndPassword(String username, String password);
     Account findByUsername(String username);
 

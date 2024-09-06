@@ -13,12 +13,12 @@ public class RegisterController {
 
     private final AccountRepository accountRepository;
     private AccountService accountService;
-    private final PasswordEncoder passwordEncoder;
 
-    public RegisterController(AccountRepository accountRepository, AccountService accountService, PasswordEncoder passwordEncoder) {
+
+    public RegisterController(AccountRepository accountRepository, AccountService accountService) {
         this.accountRepository = accountRepository;
         this.accountService = accountService;
-        this.passwordEncoder = passwordEncoder;
+
     }
 
     @GetMapping("/register")
@@ -36,9 +36,8 @@ public class RegisterController {
             return "register";  // Trả về trang đăng ký với thông báo lỗi
         }
 
-        // Mã hóa mật khẩu
-        String encodedPassword = passwordEncoder.encode(password);
-        accountService.createAccount(username, encodedPassword);
+
+        accountService.createAccount(username, password);
 
 
         model.addAttribute("message", "User registered successfully!");

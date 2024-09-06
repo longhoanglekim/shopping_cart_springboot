@@ -10,8 +10,8 @@
 <header>
     <jsp:include page="header.jsp" flush="true"/>
 </header>
-<body style="background-color: lightgrey;">
-<div class="container">
+<body style="background-color: grey;">
+<div>
         <c:if test="${not empty username}">
             <h1>Welcome ${username}</h1>
         </c:if>

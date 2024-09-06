@@ -1,5 +1,6 @@
 package com.trainings.shoppingcartdemo.services;
 
+
 import com.trainings.shoppingcartdemo.models.Account;
 import com.trainings.shoppingcartdemo.models.AccountDetails;
 import com.trainings.shoppingcartdemo.repositories.AccountDetailsRepository;
@@ -9,6 +10,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class AccountService {
@@ -20,7 +24,7 @@ public class AccountService {
     private AccountDetailsRepository accountDetailsRepository;
 
     @Transactional
-    public Account createAccount(String username, String password) {
+    public void createAccount(String username, String password) {
         // Create Account
         Account account = new Account();
         account.setUsername(username);
@@ -36,7 +40,8 @@ public class AccountService {
         account.setAccountDetail(accountDetails);
 
         // Save Account (will automatically save AccountDetails due to cascading)
-        return accountRepository.save(account);
+        accountRepository.save(account);
+        accountDetailsRepository.save(accountDetails);
     }
 
     public Account getCurrentAccount() {
@@ -49,4 +54,9 @@ public class AccountService {
         }
         return accountRepository.findByUsername(username);
     }
+
+    public List<Account> allAccounts() {
+        return accountRepository.findAll();
+    }
+
 }
