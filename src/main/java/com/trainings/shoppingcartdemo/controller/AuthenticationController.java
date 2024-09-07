@@ -29,7 +29,9 @@ public class AuthenticationController {
     @PostMapping("/signup")
     public ResponseEntity<Account> register(@RequestBody RegisterDto registerAccountDto) {
         Account registeredAccount = authenticationService.signup(registerAccountDto);
-        log.debug("Registered account: {}", registeredAccount);
+        if (registeredAccount == null) {
+            return ResponseEntity.badRequest().build();
+        }
         return ResponseEntity.ok(registeredAccount);
     }
 

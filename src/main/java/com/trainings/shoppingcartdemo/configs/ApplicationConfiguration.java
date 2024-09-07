@@ -1,6 +1,7 @@
 package com.trainings.shoppingcartdemo.configs;
 
 import com.trainings.shoppingcartdemo.repositories.AccountRepository;
+import com.trainings.shoppingcartdemo.services.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,9 +15,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @Configuration
 public class ApplicationConfiguration {
     private final AccountRepository userRepository;
+    private final UserDetailsServiceImpl accountService;
 
-    public ApplicationConfiguration(AccountRepository userRepository) {
+    public ApplicationConfiguration(AccountRepository userRepository, UserDetailsServiceImpl accountService) {
         this.userRepository = userRepository;
+        this.accountService = accountService;
     }
 
     @Bean
@@ -41,7 +44,7 @@ public class ApplicationConfiguration {
     AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
 
-        authProvider.setUserDetailsService(userDetailsService());
+       authProvider.setUserDetailsService(userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder());
 
         return authProvider;

@@ -3,6 +3,7 @@ package com.trainings.shoppingcartdemo.configs;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -37,16 +38,16 @@ public class SecurityConfiguration {
         http
                 .csrf(csrf -> csrf.disable()) // Disable CSRF protection
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/login", "/welcome", "/register", "/jsp/**").permitAll()  // Allow JWT auth and login/register endpoints
+                        .requestMatchers("/auth/**", "/loginPage", "/welcome", "/register", "/jsp/**").permitAll()  // Allow JWT auth and login/register endpoints
                         .requestMatchers("/addProduct", "/updateProduct", "/addProductToCart", "/shopping_cart", "/orders", "/deleteProduct").authenticated()  // Secure specific servlets
                         .anyRequest().authenticated()) // Other requests require authentication
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless session for JWT
-//                .formLogin(form -> form // Standard form-based login
-//                        .loginPage("/login")
-//                        .defaultSuccessUrl("/welcome", true) // Redirect to welcome page after successful login
-//                        .failureUrl("/login?error=true")
-//                        .permitAll())
+                .formLogin(form -> form // Standard form-based login
+                        .loginPage("/loginPage")
+                        .defaultSuccessUrl("/welcome", true) // Redirect to welcome page after successful login
+                        .failureUrl("/login?error=true")
+                        .permitAll())
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/welcome")

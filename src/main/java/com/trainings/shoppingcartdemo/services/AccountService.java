@@ -24,7 +24,7 @@ public class AccountService {
     private AccountDetailsRepository accountDetailsRepository;
 
     @Transactional
-    public void createAccount(String username, String password) {
+    public Account createAccount(String username, String password) {
         // Create Account
         Account account = new Account();
         account.setUsername(username);
@@ -42,6 +42,7 @@ public class AccountService {
         // Save Account (will automatically save AccountDetails due to cascading)
         accountRepository.save(account);
         accountDetailsRepository.save(accountDetails);
+        return account;
     }
 
     public Account getCurrentAccount() {
