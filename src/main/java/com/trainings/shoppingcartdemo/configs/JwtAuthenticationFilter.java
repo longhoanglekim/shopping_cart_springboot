@@ -74,4 +74,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             handlerExceptionResolver.resolveException(request, response, null, exception);
         }
     }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        // Bỏ qua bộ lọc cho các URL như /login
+        return request.getServletPath().equals("/login");
+    }
+
 }

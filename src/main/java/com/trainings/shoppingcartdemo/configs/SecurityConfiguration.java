@@ -3,12 +3,9 @@ package com.trainings.shoppingcartdemo.configs;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -24,7 +21,6 @@ public class SecurityConfiguration {
     private final AuthenticationProvider authenticationProvider;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-
     public SecurityConfiguration(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             AuthenticationProvider authenticationProvider
@@ -38,28 +34,22 @@ public class SecurityConfiguration {
         http
                 .csrf(csrf -> csrf.disable()) // Disable CSRF protection
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/loginPage", "/welcome", "/register", "/jsp/**").permitAll()  // Allow JWT auth and login/register endpoints
-                        .requestMatchers("/addProduct", "/updateProduct", "/addProductToCart", "/shopping_cart", "/orders", "/deleteProduct").authenticated()  // Secure specific servlets
+                        .requestMatchers("/auth/**", "/login", "/welcome", "/register", "/jsp/**", "/js/**", "/css/**").permitAll()  // Allow JWT auth and login/register endpoints
+//                        .requestMatchers("/addProduct", "/updateProduct", "/addProductToCart", "/shopping_cart", "/orders", "/deleteProduct").authenticated()  // Secure specific servlets
                         .anyRequest().authenticated()) // Other requests require authentication
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless session for JWT
                 .formLogin(form -> form // Standard form-based login
-                        .loginPage("/loginPage")
+                        .loginPage("/login")
                         .defaultSuccessUrl("/welcome", true) // Redirect to welcome page after successful login
                         .failureUrl("/login?error=true")
                         .permitAll())
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/welcome")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
-                        .permitAll())
+
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // Adding JWT filter before the default authentication filter
 
         return http.build();
     }
-
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
@@ -71,5 +61,4 @@ public class SecurityConfiguration {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
 }
