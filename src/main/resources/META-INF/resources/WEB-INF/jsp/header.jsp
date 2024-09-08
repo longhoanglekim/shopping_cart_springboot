@@ -1,7 +1,7 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <html>
 <head>
-    <link href="webjars/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
     <title>header</title>
     <style>
         #findList {
@@ -49,7 +49,7 @@
                 <c:when test="${not empty username}">
                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/profile">${username}</a></li>
                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/shopping_cart">
-                        <img src="${pageContext.request.contextPath}/image/shopping-cart.png" alt="Shopping cart" width="35" height="30">
+                        <img src="/image/shopping-cart.png" alt="Shopping cart" width="35" height="30">
                     </a></li>
                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/logout">Logout</a></li>
                 </c:when>
@@ -62,8 +62,8 @@
     </div>
 </nav>
 
-<script src="webjars/bootstrap/5.3.3/js/bootstrap.min.js"></script>
-<script src="webjars/jquery/3.6.0/jquery.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/jquery.min.js"></script>
 <script>
     let selectedStrings = [];
     let suggestedItems = [];

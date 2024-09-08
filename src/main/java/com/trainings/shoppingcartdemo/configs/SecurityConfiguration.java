@@ -34,9 +34,8 @@ public class SecurityConfiguration {
         http
                 .csrf(csrf -> csrf.disable()) // Disable CSRF protection
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/login", "/welcome", "/register", "/jsp/**", "/js/**", "/css/**").permitAll()  // Allow JWT auth and login/register endpoints
-//                        .requestMatchers("/addProduct", "/updateProduct", "/addProductToCart", "/shopping_cart", "/orders", "/deleteProduct").authenticated()  // Secure specific servlets
-                        .anyRequest().authenticated()) // Other requests require authentication
+                        .requestMatchers("/auth/**", "/login", "/welcome", "/register", "/WEB-INF/**", "/css/**", "/js/**", "/image/**").permitAll()  // Cho phép truy cập không cần xác thực tới tài nguyên tĩnh
+                        .anyRequest().authenticated())  // Bảo vệ các endpoint khác
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless session for JWT
                 .formLogin(form -> form // Standard form-based login

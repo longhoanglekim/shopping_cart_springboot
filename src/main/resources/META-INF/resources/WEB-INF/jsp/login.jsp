@@ -1,7 +1,7 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <html>
 <head>
-    <link href="webjars/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
     <title>Login page</title>
     <style>
         #errorMessage {
@@ -24,6 +24,7 @@
 </head>
 <header>
     <jsp:include page="header.jsp" flush="true"/>
+</header>
     <body>
     <div class="container">
         <c:if test="${param.error != null}">
@@ -81,6 +82,5 @@
         // Gọi hàm xóa tất cả cookie ngay khi vào trang
         deleteAllCookies();
     </script>
-
     </body>
 </html>
