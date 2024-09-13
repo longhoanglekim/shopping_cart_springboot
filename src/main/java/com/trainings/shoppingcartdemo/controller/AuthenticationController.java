@@ -4,7 +4,7 @@ import com.trainings.shoppingcartdemo.dto.LoginDto;
 import com.trainings.shoppingcartdemo.dto.LoginResponse;
 import com.trainings.shoppingcartdemo.dto.RegisterDto;
 import com.trainings.shoppingcartdemo.models.Account;
-import com.trainings.shoppingcartdemo.security.jwt.JwtService;
+import com.trainings.shoppingcartdemo.services.JwtService;
 import com.trainings.shoppingcartdemo.services.AuthenticationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +42,6 @@ public class AuthenticationController {
         String jwtToken = jwtService.generateToken(authenticatedUser);
 
         LoginResponse loginResponse = new LoginResponse().setToken(jwtToken).setExpiresIn(jwtService.getExpirationTime());
-        log.debug("Login response: {}", loginResponse);
         return ResponseEntity.ok(loginResponse);
 
     }

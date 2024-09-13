@@ -1,6 +1,6 @@
 package com.trainings.shoppingcartdemo.configs;
 
-import com.trainings.shoppingcartdemo.security.jwt.JwtService;
+import com.trainings.shoppingcartdemo.services.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,6 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.debug("Don't need auth");
             filterChain.doFilter(request, response);
             return;
         }
@@ -52,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             final String jwt = authHeader.substring(7);
             final String userEmail = jwtService.extractUsername(jwt);
-
+            log.debug("Get Token :" + jwt);
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
             if (userEmail != null && authentication == null) {
@@ -80,8 +81,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String requestPath = request.getServletPath();
 
-        // Log để kiểm tra chính xác các đường dẫn nào đang bị lọc
-        log.debug("JwtAuthenticationFilter - Checking filter exclusion for path: " + requestPath);
 
         // Bỏ qua bộ lọc cho /login, các tài nguyên JSP trong /WEB-INF/jsp/ và tài nguyên tĩnh
         return requestPath.equals("/login")

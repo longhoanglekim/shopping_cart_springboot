@@ -38,23 +38,26 @@
             </script>
         </c:if>
         <div style="margin-top: 200px;">
-            <form method="post" action="/login">
+            <form method="post" action="/login" id="loginForm">
                 <table>
                     <tr>
                         <td>Enter the account:</td>
-                        <td><input type="text" name="username" required="required"></td>
+                        <td><input type="text" id="username" name="username" required="required"></td>
                     </tr>
                     <tr>
                         <td>Enter the password:</td>
-                        <td><input type="password" name="password" required="required"></td>
+                        <td><input type="password" id="password" name="password" required="required"></td>
                     </tr>
                 </table>
+                <input type="hidden" id="token" value="">
                 <input type="submit" value="Login" class="btn btn-success">
             </form>
         </div>
         <p class="icon-link">Haven't got an account?</p>
         <a href="${pageContext.request.contextPath}/register" class="btn btn-primary">Register</a>
     </div>
+    <script src="webjars/bootstrap/5.3.3/js/bootstrap.min.js"></script>
+    <script src="webjars/jquery/3.6.0/jquery.min.js"></script>
     <script>
         // Hàm để xóa cookie theo tên
         function deleteCookie(name) {
@@ -81,6 +84,59 @@
 
         // Gọi hàm xóa tất cả cookie ngay khi vào trang
         deleteAllCookies();
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            localStorage.removeItem('token');
+            document.getElementById('loginForm').addEventListener('click', function(event) {
+                event.preventDefault(); // Ngăn không cho form submit mặc định
+
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                // Gửi yêu cầu đăng nhập qua fetch API
+                fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Login failed');
+                        }
+                        console.log('Login successful');
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.token) {
+                            // Lưu token vào localStorage sau khi đăng nhập thành công
+                            localStorage.setItem('token', data.token);
+
+
+                            // Chuyển hướng đến trang welcome hoặc trang khác sau khi đăng nhập thành công
+                            window.location.href = '/welcome';
+                        } else {
+                            // Hiển thị thông báo lỗi nếu không nhận được token
+                            document.getElementById('errorMessage').style.display = 'block';
+                            setTimeout(() => {
+                                document.getElementById('errorMessage').style.display = 'none';
+                            }, 2000);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        document.getElementById('errorMessage').style.display = 'block';
+                        setTimeout(() => {
+                            document.getElementById('errorMessage').style.display = 'none';
+                        }, 2000);
+                    });
+            });
+        });
     </script>
     </body>
 </html>
