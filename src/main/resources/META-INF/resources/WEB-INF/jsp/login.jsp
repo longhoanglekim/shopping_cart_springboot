@@ -3,6 +3,7 @@
 <head>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <title>Login page</title>
+    <link rel="icon" href="data:,">
     <style>
         #errorMessage {
             color: red;
@@ -38,7 +39,7 @@
             </script>
         </c:if>
         <div style="margin-top: 200px;">
-            <form method="post" action="/login" id="loginForm">
+            <form  id="loginForm">
                 <table>
                     <tr>
                         <td>Enter the account:</td>
@@ -87,7 +88,10 @@
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            localStorage.removeItem('token');
+            console.log("Login page loaded");
+            if (localStorage.getItem('token')) {
+                localStorage.removeItem('token');
+            }
             document.getElementById('loginForm').addEventListener('click', function(event) {
                 event.preventDefault(); // Ngăn không cho form submit mặc định
 
@@ -109,12 +113,12 @@
                         if (!response.ok) {
                             throw new Error('Login failed');
                         }
-                        console.log('Login successful');
                         return response.json();
                     })
                     .then(data => {
                         if (data.token) {
                             // Lưu token vào localStorage sau khi đăng nhập thành công
+                            console.log('Token:', data.token);
                             localStorage.setItem('token', data.token);
 
 

@@ -6,6 +6,39 @@
     <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/css/custom.css"/>
     <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/css/product.css"/>
     <script type="text/javascript" src="${pageContext.request.contextPath}/js/product.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const token = localStorage.getItem('token');  // Lấy JWT từ localStorage
+
+            if (token) {
+
+                // Gửi request kèm JWT token trong Authorization header
+                fetch('/welcome', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,  // Gửi JWT trong header
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => {
+                        console.log("OK");
+                        if (response.ok) {
+                            return response.text();  // Nếu request thành công, lấy nội dung của profile
+                        } else {
+                            throw new Error('Unauthorized');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        document.getElementById('content').innerHTML = '<h3>Unauthorized access</h3>';  // Nếu thất bại
+                    });
+            } else {
+                document.getElementById('content').innerHTML = '<h3>Please login first.</h3>';  // Nếu không có JWT
+            }
+        });
+
+    </script>
+    <link rel="icon" href="data:,">
 </head>
 <header>
     <jsp:include page="header.jsp" flush="true"/>
@@ -48,6 +81,19 @@
                 })
                 .catch(error => console.error('Error:', error));
         }
+        fetch('/demo-api/hello', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Secure data received');
+            })
+            .catch(error => {
+                console.error('Error fetching secure data:', error);
+            });
     });
 </script>
 <script>
@@ -61,6 +107,7 @@
             getProductListByCategory(category);
         });
     });
+
 </script>
 
 </body>

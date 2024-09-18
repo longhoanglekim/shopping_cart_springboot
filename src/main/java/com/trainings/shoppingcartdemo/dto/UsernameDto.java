@@ -3,7 +3,7 @@ package com.trainings.shoppingcartdemo.dto;
 import lombok.Getter;
 
 @Getter
-public class UsernameDto {
+public class    UsernameDto {
     private String username;
 
     public UsernameDto() {

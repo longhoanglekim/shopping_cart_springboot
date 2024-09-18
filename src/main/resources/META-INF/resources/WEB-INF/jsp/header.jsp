@@ -4,6 +4,7 @@
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <script type="text/javascript" src="${pageContext.request.contextPath}/js/getAttribute.js"></script>
     <title>header</title>
+    <link rel="icon" href="data:,">
     <style>
         #findList {
             position: absolute;
@@ -24,6 +25,31 @@
             background: #aaaaaa;
         }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const token = localStorage.getItem('token');
+            console.log("Header token :" + token);
+            if (token) {
+
+                fetch('api/jwt/getName', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Đặt tên người dùng vào welcome text
+                        if (data) {
+                            document.getElementById('username').innerText = data.username;
+                        }
+                    })
+            } else {
+                document.getElementById('profileContainer').innerHTML = '<h3>Please login first.</h3>';
+            }
+        });
+    </script>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -136,17 +162,48 @@
 </script>
 <script>
     document.addEventListener("DOMContentLoaded", async function () {
+        console.log('Header script loaded');
         const token = localStorage.getItem('token');  // Kiểm tra token từ localStorage
         const navLinks = document.getElementById('nav-links');  // Lấy phần tử nav chứa các liên kết
-        console.log(token)
+        console.log(token);
         // Nếu có token, gọi API để lấy thông tin người dùng và cập nhật header
         if (token) {
+            document.addEventListener("DOMContentLoaded", function () {
+                const token = localStorage.getItem('token');
 
+                if (token) {
+                    console.log('Token from localStorage:', token); // Kiểm tra token trong console
+                    fetch('/profile', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`, // Thêm token vào header
+                            'Content-Type': 'application/json' // Đặt Content-Type là JSON
+                        }
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            console.log('Response:', response); // In ra phản hồi từ server
+                            return response.json(); // Chuyển đổi phản hồi sang JSON
+                        })
+                        .then(data => {
+                            console.log('Data:', data); // In dữ liệu nhận được vào console
+                        })
+                        .catch(error => {
+                            console.error('Error:', error); // In lỗi vào console
+                        });
+                } else {
+                    console.error('No token found in localStorage'); // In ra nếu không có token
+                }
+            });
             navLinks.innerHTML = '';
 
             // Thêm các liên kết mới cho người dùng đã đăng nhập
             navLinks.innerHTML = `
-                        <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/profile" id="profileLink">Example Name</a></li>
+                        <li class="nav-item">
+        <button class="nav-link btn" id="profileButton">Example Name</button>
+                        </li>
                         <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/shopping_cart">
                             <img src="/image/shopping-cart.png" alt="Shopping cart" width="35" height="30">
                         </a></li>
@@ -154,11 +211,39 @@
                     `;
             const username = await getName(token);  // Chờ hàm getName(token) trả về giá trị
             if (username) {
-                document.getElementById("profileLink").textContent = username;  // Đặt tên người dùng
+                console.log('Username:', username);
+                document.getElementById("profileButton").textContent = username;  // Đặt tên người dùng
             }
-
+            /// Thêm event listener sau khi HTML đã được chèn
+            document.getElementById('profileButton').addEventListener('click', function() {
+                console.log('Button clicked'); // Kiểm tra xem event click có hoạt động không
+                fetch('${pageContext.request.contextPath}/profile', {
+                    method: 'GET',  // Dùng GET vì bạn đang lấy HTML
+                    headers: {
+                        'Authorization': 'Bearer ' + token // Thêm token vào header
+                    }
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.text(); // Lấy dữ liệu dưới dạng HTML (text)
+                        } else {
+                            throw new Error('Network response was not ok.');
+                        }
+                    })
+                    .then(html => {
+                        console.log('Success:', html);
+                        // Hiển thị HTML hoặc chuyển hướng trang
+                        document.open(); // Mở tài liệu mới
+                        document.write(html); // Ghi nội dung HTML vào
+                        document.close(); // Đóng tài liệu để hoàn tất việc render
+                    })
+                    .catch(error => {
+                        console.error('Fetch error:', error);
+                    });
+            });
         }
     });
+
 </script>
 
 </body>

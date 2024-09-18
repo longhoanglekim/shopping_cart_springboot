@@ -9,7 +9,6 @@ function getProductListByCategory(category) {
         })
         .then(productList => {
             if (productList != null) {
-                console.log("Exist product");
 
                 // Lấy productContainer bằng ID kết hợp với category
                 const productContainer = document.getElementById("productContainer-" + category);

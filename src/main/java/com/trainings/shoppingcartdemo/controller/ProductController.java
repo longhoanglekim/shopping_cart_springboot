@@ -42,7 +42,7 @@ public class ProductController {
         this.orderService = orderService;
     }
 
-    @GetMapping("showListProduct/{category}")
+    @GetMapping("/showListProduct/{category}")
     public String goShowListProductPage(HttpSession session,
                                     @PathVariable String category,
                                     ModelMap map) {

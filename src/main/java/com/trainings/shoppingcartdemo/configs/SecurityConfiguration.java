@@ -34,7 +34,9 @@ public class SecurityConfiguration {
         http
                 .csrf(csrf -> csrf.disable()) // Disable CSRF protection
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/login", "/welcome", "/register", "/WEB-INF/**", "/css/**", "/js/**", "/image/**", "/api/**").permitAll()  // Cho phép truy cập không cần xác thực tới tài nguyên tĩnh
+                        .requestMatchers("/auth/**", "/login", "/welcome", "/register", "/WEB-INF/**", "/css/**", "/js/**", "/image/**",
+                                "/api/**", "/showListProduct/**", "/productInfo").permitAll()  // Cho phép truy cập không cần xác thực tới tài nguyên tĩnh
+                        .requestMatchers("/profile").authenticated() // Chỉ cho phép người dùng có quyền USER truy cập
                         .anyRequest().authenticated())  // Bảo vệ các endpoint khác
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless session for JWT
@@ -49,6 +51,8 @@ public class SecurityConfiguration {
 
         return http.build();
     }
+
+
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {

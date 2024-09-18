@@ -5,12 +5,13 @@ import com.trainings.shoppingcartdemo.dto.LoginDto;
 import com.trainings.shoppingcartdemo.dto.RegisterDto;
 import com.trainings.shoppingcartdemo.models.Account;
 import com.trainings.shoppingcartdemo.repositories.AccountRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+@Slf4j
 @Service
 public class AuthenticationService {
     private final AccountRepository userRepository;
@@ -41,7 +42,7 @@ public class AuthenticationService {
 
     public Account authenticate(LoginDto input) {
         try {
-            System.out.println("input.getUsername() = " + input.getUsername());
+            log.debug("Authenticating user: " + input.getUsername());
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(input.getUsername(), input.getPassword())
             );
