@@ -61,34 +61,34 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data && data.username) {
-                        const name = data.username; // Gán giá trị username từ API
-                        console.log(name);
-                        // Xóa liên kết login và register cũ
-                        navLinks.innerHTML = '';
+                <%--        const name = data.username; // Gán giá trị username từ API--%>
+                <%--        console.log(name);--%>
+                <%--        // Xóa liên kết login và register cũ--%>
+                <%--        navLinks.innerHTML = '';--%>
 
-                        // Sử dụng template literals để chèn giá trị `name` từ JavaScript
-                        const profileLinkValue = `<a class="nav-link" href="${contextPath}/profile">${name}</a>`;
+                <%--        // Sử dụng template literals để chèn giá trị `name` từ JavaScript--%>
+                <%--        const profileLinkValue = `<a class="nav-link" href="${contextPath}/profile">${name}</a>`;--%>
 
-                        // Tạo phần tử `li` chứa liên kết profile
-                        const profileLink = document.createElement('li');
-                        profileLink.classList.add('nav-item');
-                        profileLink.innerHTML = profileLinkValue;
-                        navLinks.appendChild(profileLink);
+                <%--        // Tạo phần tử `li` chứa liên kết profile--%>
+                <%--        const profileLink = document.createElement('li');--%>
+                <%--        profileLink.classList.add('nav-item');--%>
+                <%--        profileLink.innerHTML = profileLinkValue;--%>
+                <%--        navLinks.appendChild(profileLink);--%>
 
-                        // Tạo phần tử giỏ hàng và logout
-                        const cartLink = document.createElement('li');
-                        cartLink.classList.add('nav-item');
-                        cartLink.innerHTML = `
-                    <a class="nav-link" href="${contextPath}/shopping_cart">
-                        <img src="/image/shopping-cart.png" alt="Shopping cart" width="35" height="30">
-                    </a>
-                `;
-                        navLinks.appendChild(cartLink);
+                <%--        // Tạo phần tử giỏ hàng và logout--%>
+                <%--        const cartLink = document.createElement('li');--%>
+                <%--        cartLink.classList.add('nav-item');--%>
+                <%--        cartLink.innerHTML = `--%>
+                <%--    <a class="nav-link" href="${contextPath}/shopping_cart">--%>
+                <%--        <img src="/image/shopping-cart.png" alt="Shopping cart" width="35" height="30">--%>
+                <%--    </a>--%>
+                <%--`;--%>
+                <%--        navLinks.appendChild(cartLink);--%>
 
-                        const logoutLink = document.createElement('li');
-                        logoutLink.classList.add('nav-item');
-                        logoutLink.innerHTML = `<a class="nav-link" href="${contextPath}/logout">Logout</a>`;
-                        navLinks.appendChild(logoutLink);
+                <%--        const logoutLink = document.createElement('li');--%>
+                <%--        logoutLink.classList.add('nav-item');--%>
+                <%--        logoutLink.innerHTML = `<a class="nav-link" href="${contextPath}/logout">Logout</a>`;--%>
+                <%--        navLinks.appendChild(logoutLink);--%>
                     }
                 })
                 .catch(error => {

@@ -4,13 +4,15 @@
 <head>
     <link href="${pageContext.request.contextPath}/webjars/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
     <title>Show Product</title>
+    <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/css/product.css"/>
+    <script type="text/javascript" src="${pageContext.request.contextPath}/js/verifyToken.js"></script>
 </head>
 <header>
     <jsp:include page="header.jsp" flush="true"/>
 </header>
 <body>
 <div class="container">
-    <h1>Hello world, ${sessionScope.username}</h1>
+    <h1>Hello world</h1>
     <table class="table table-bordered">
         <thead>
         <tr>
@@ -29,7 +31,7 @@
             <th>${product.getFormattedPrice()}</th>
             <th>
                 <div style="margin-bottom: 10px">
-                    <a href="${pageContext.request.contextPath}/updateProduct?id=${product.id}" class="btn btn-success">Update</a>
+                    <button class="button-product" id="updateProduct">Update</button>
                 </div>
                 <div style="margin-bottom: 10px">
                     <form action="${pageContext.request.contextPath}/addProductToCart" method="post">
@@ -63,6 +65,45 @@
             })
         }
     }
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('DOM loaded');
+        const updateButton = document.getElementById('updateProduct');
+        console.log("Exist button: " + updateButton);
+        updateButton.addEventListener('click', function () {
+            if (checkToken()) {
+                const token = localStorage.getItem('token');
+                const id = ${product.id};
+                console.log("Update product");
+                //Todo: Fetch product update gets
+                fetch('${pageContext.request.contextPath}/updateProduct?id=' + id, {
+                    method: 'GET',  // Dùng GET vì bạn đang lấy HTML
+                    headers: {
+                        'Authorization': 'Bearer ' + token // Thêm token vào header
+                    }
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.text(); // Lấy dữ liệu dưới dạng HTML (text)
+                        } else {
+                            throw new Error('Network response was not ok.');
+                        }
+                    })
+                    .then(html => {
+                        console.log('Success:', html);
+                        // Hiển thị HTML hoặc chuyển hướng trang
+                        document.open(); // Mở tài liệu mới
+                        document.write(html); // Ghi nội dung HTML vào
+                        document.close(); // Đóng tài liệu để hoàn tất việc render
+                    })
+                    .catch(error => {
+                        console.error('Fetch error:', error);
+                    });
+            } else {
+                console.log("Please login first");
+            }
+        });
+    });
+
 </script>
 </body>
 </html>

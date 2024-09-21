@@ -86,3 +86,7 @@
     color : lightslategrey;
 }
 
+#cartButton {
+    border : none;
+    outline: none;
+}

@@ -5,6 +5,7 @@
     <script type="text/javascript" src="${pageContext.request.contextPath}/js/getAttribute.js"></script>
     <title>header</title>
     <link rel="icon" href="data:,">
+    <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/css/custom.css"/>
     <style>
         #findList {
             position: absolute;
@@ -23,6 +24,24 @@
 
         #findList li:hover {
             background: #aaaaaa;
+        }
+
+        button {
+            border: none;
+            outline: none;
+            background: none; /* Remove any background color from the button */
+            padding: 0; /* Ensure there's no padding around the button */
+            margin: 0; /* Ensure no extra margin */
+        }
+
+        #cartButton {
+            border: none; /* Remove border from the image inside the button */
+            outline: none; /* Remove any outline when focused */
+            background-color: transparent; /* Ensure background is transparent */
+        }
+
+        button img {
+            display: block; /* Remove inline spacing around the image */
         }
     </style>
     <script>
@@ -90,7 +109,7 @@
 <script>
     let selectedStrings = [];
     let suggestedItems = [];
-    let itemClicked = false;  // Thêm biến để theo dõi nếu item đã được chọn
+    let itemClicked = false;
     let debounceTimeout;
 
     document.getElementById('searchInput').addEventListener('input', function () {
@@ -168,35 +187,7 @@
         console.log(token);
         // Nếu có token, gọi API để lấy thông tin người dùng và cập nhật header
         if (token) {
-            document.addEventListener("DOMContentLoaded", function () {
-                const token = localStorage.getItem('token');
 
-                if (token) {
-                    console.log('Token from localStorage:', token); // Kiểm tra token trong console
-                    fetch('/profile', {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`, // Thêm token vào header
-                            'Content-Type': 'application/json' // Đặt Content-Type là JSON
-                        }
-                    })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            console.log('Response:', response); // In ra phản hồi từ server
-                            return response.json(); // Chuyển đổi phản hồi sang JSON
-                        })
-                        .then(data => {
-                            console.log('Data:', data); // In dữ liệu nhận được vào console
-                        })
-                        .catch(error => {
-                            console.error('Error:', error); // In lỗi vào console
-                        });
-                } else {
-                    console.error('No token found in localStorage'); // In ra nếu không có token
-                }
-            });
             navLinks.innerHTML = '';
 
             // Thêm các liên kết mới cho người dùng đã đăng nhập
@@ -204,10 +195,12 @@
                         <li class="nav-item">
         <button class="nav-link btn" id="profileButton">Example Name</button>
                         </li>
-                        <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/shopping_cart">
-                            <img src="/image/shopping-cart.png" alt="Shopping cart" width="35" height="30">
-                        </a></li>
-                        <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/logout">Logout</a></li>
+                        <li class="nav-item">
+        <button class="nav-link btn" id="cartButton">
+            <img src="/image/shopping-cart.png" alt="Shopping cart" width="35" height="30">
+        </button>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/logout" id="logout">Logout</a></li>
                     `;
             const username = await getName(token);  // Chờ hàm getName(token) trả về giá trị
             if (username) {
@@ -215,7 +208,7 @@
                 document.getElementById("profileButton").textContent = username;  // Đặt tên người dùng
             }
             /// Thêm event listener sau khi HTML đã được chèn
-            document.getElementById('profileButton').addEventListener('click', function() {
+            document.getElementById('profileButton').addEventListener('click', function () {
                 console.log('Button clicked'); // Kiểm tra xem event click có hoạt động không
                 fetch('${pageContext.request.contextPath}/profile', {
                     method: 'GET',  // Dùng GET vì bạn đang lấy HTML
@@ -241,7 +234,47 @@
                         console.error('Fetch error:', error);
                     });
             });
+            document.getElementById('cartButton').addEventListener('click', function () {
+                console.log('Button clicked'); // Kiểm tra xem event click có hoạt động không
+                fetch('${pageContext.request.contextPath}/shopping_cart', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token // Thêm token vào header
+                    }
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.text(); // Lấy dữ liệu dưới dạng HTML (text)
+                        } else {
+                            throw new Error('Network response was not ok.');
+                        }
+                    })
+                    .then(html => {
+                        console.log('Success:', html);
+                        // Hiển thị HTML hoặc chuyển hướng trang
+                        document.open(); // Mở tài liệu mới
+                        document.write(html); // Ghi nội dung HTML vào
+                        document.close(); // Đóng tài liệu để hoàn tất việc render
+                    })
+                    .catch(error => {
+                        console.error('Fetch error:', error);
+                    });
+            });
+
+        } else {
+            // Nếu không có token, hiển thị liên kết login và register
+            navLinks.innerHTML = `
+                        <li class="nav-item"><a href="${pageContext.request.contextPath}/login" class="nav-link" id="login-link">Login</a></li>
+                        <li class="nav-item"><a href="${pageContext.request.contextPath}/register" class="nav-link" id="register-link">Register</a></li>
+                    `;
         }
+        document.getElementById('logout').addEventListener('click', function (event) {
+            event.preventDefault();  // Ngăn việc chuyển trang ngay lập tức
+            localStorage.removeItem('token');  // Xóa token khỏi localStorage
+
+            // Sau khi xóa token, chuyển hướng đến trang logout trên server để xử lý
+            window.location.href = '${pageContext.request.contextPath}/login';
+        });
     });
 
 </script>
