@@ -3,13 +3,15 @@ package com.trainings.shoppingcartdemo.controller;
 import com.trainings.shoppingcartdemo.enums.OrderState;
 import com.trainings.shoppingcartdemo.models.*;
 import com.trainings.shoppingcartdemo.repositories.*;
+import com.trainings.shoppingcartdemo.services.AccountService;
 import com.trainings.shoppingcartdemo.services.OrderProductService;
 import com.trainings.shoppingcartdemo.services.OrderService;
 import com.trainings.shoppingcartdemo.services.PriceFormattingService;
-import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -38,8 +40,9 @@ public class OrderController {
     private final OrderProductService orderProductService;
     private final OrderProductRepository orderProductRepository;
     private final PriceFormattingService priceFormattingService;
+    private final AccountService accountService;
 
-    public OrderController(OrderRepository orderRepository, AccountRepository accountRepository, ProductRepository productRepository, AccountDetailsRepository accountDetailsRepository, PriceFormattingService formattingService, OrderDetailsRepository orderDetailsRepository, OrderService orderService, OrderProductService orderProductService, OrderProductRepository orderProductRepository, PriceFormattingService priceFormattingService) {
+    public OrderController(OrderRepository orderRepository, AccountRepository accountRepository, ProductRepository productRepository, AccountDetailsRepository accountDetailsRepository, PriceFormattingService formattingService, OrderDetailsRepository orderDetailsRepository, OrderService orderService, OrderProductService orderProductService, OrderProductRepository orderProductRepository, PriceFormattingService priceFormattingService, AccountService accountService) {
         this.orderRepository = orderRepository;
         this.accountRepository = accountRepository;
         this.productRepository = productRepository;
@@ -49,13 +52,14 @@ public class OrderController {
         this.orderProductService = orderProductService;
         this.orderProductRepository = orderProductRepository;
         this.priceFormattingService = priceFormattingService;
+        this.accountService = accountService;
     }
 
     @GetMapping("/shopping_cart")
-    public String goShoppingCartPage(HttpSession session) {
+    public String goShoppingCartPage(HttpServletRequest request, HttpSession session) {
         log.debug("GET /shopping_cart");
-        String username = (String) session.getAttribute("username");
-        Account account = accountRepository.findByUsername(username);
+        String token = resolveToken(request);
+        Account account = accountService.getCurrentAccount(token);
         Order order = orderRepository.findByAccountAndCompletedFalse(account);
         if (order == null) {
             order = orderService.createOrder(account);
@@ -87,8 +91,8 @@ public class OrderController {
 
     @Transactional
     @PostMapping("/addProductToCart")
-    public String addProductToCart(@RequestParam("id") String id, HttpSession session) {
-        Order order = findCurrentOrder(session);
+    public String addProductToCart(@RequestParam("id") String id, HttpSession session, HttpServletRequest request) {
+        Order order = findCurrentOrder(session, request);
         Product product = productRepository.findById(Long.parseLong(id)).orElse(null);
 
         if (product != null) {
@@ -107,9 +111,9 @@ public class OrderController {
     }
 
     @PostMapping("/update-quantity")
-    public ResponseEntity<String> updateQuantity(@RequestParam String productName, @RequestParam int quantity, HttpSession session) {
+    public ResponseEntity<String> updateQuantity(@RequestParam String productName, @RequestParam int quantity, HttpSession session, HttpServletRequest request) {
         Map<Product, Integer> cart = (Map<Product, Integer>) session.getAttribute("productMap");
-        Order order = (Order) session.getAttribute("order");
+        Order order = findCurrentOrder(session, request);
 
         if (cart == null || order == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"status\":\"Cart or Order not found\"}");
@@ -133,9 +137,9 @@ public class OrderController {
             OrderProduct orderProduct = orderProductRepository.findOrderProductByOrderIdAndProductId(order.getId(), targetProduct.getId());
             if (orderProduct != null) {
                 if (quantity == 0) {
-                    orderProductRepository.delete(orderProduct); // Remove the OrderProduct entity if the quantity is 0
+                    orderProductRepository.delete(orderProduct);
                 } else {
-                    orderProduct.setQuantity(quantity); // Update the quantity in the OrderProduct entity
+                    orderProduct.setQuantity(quantity);
                     orderProductRepository.save(orderProduct);
                 }
             }
@@ -156,10 +160,10 @@ public class OrderController {
         return ResponseEntity.ok("{\"status\":\"success\"}");
     }
     @GetMapping("/confirmOrder")
-    public String goConfirmPage(HttpSession session,
+    public String goConfirmPage(HttpSession session, HttpServletRequest request,
                                 ModelMap map) {
         log.debug("GET /confirmOrder");
-        if (findCurrentOrder(session).getOrderProducts().isEmpty()) {
+        if (findCurrentOrder(session, request).getOrderProducts().isEmpty()) {
             return "redirect:/shopping_cart";
         }
         Map<Product, Integer> productMap = (Map<Product, Integer>) session.getAttribute("productMap");
@@ -171,18 +175,18 @@ public class OrderController {
                 return "product_cart";
             }
         }
-        Account account = accountRepository.findByUsername((String) session.getAttribute("username"));
+        Account account = accountService.getCurrentAccount(resolveToken(request));
         AccountDetails accountDetails = accountDetailsRepository.findByAccountId(account.getId());
-        OrderDetails orderDetails = orderDetailsRepository.findByOrderId(findCurrentOrder(session).getId());
+        OrderDetails orderDetails = orderDetailsRepository.findByOrderId(findCurrentOrder(session, request).getId());
         map.put("accountDetails", accountDetails);
         map.put("orderDetails", orderDetails);
         session.setAttribute("deliverPayment", priceFormattingService.getFormattedPrice(orderDetails.getDeliverPayment()));
         return "confirm_order";
     }
     @GetMapping("/checkout")
-    public String checkout(HttpSession session) {
+    public String checkout(HttpSession session, HttpServletRequest request) {
         log.debug("Checkout");
-        Order order = (Order) session.getAttribute("order");
+        Order order = findCurrentOrder(session, request);
         Map<Product, Integer> productMap = (Map<Product, Integer>) session.getAttribute("productMap");
         for (Map.Entry<Product, Integer> entry : productMap.entrySet()) {
             List<Product> productList = productRepository.getProductsByNameAndPrice(entry.getKey().getName(), entry.getKey().getPrice());
@@ -203,9 +207,6 @@ public class OrderController {
         String state = String.valueOf(OrderState.PendingConfirmation);
         orderDetails.setState(state);
         orderDetailsRepository.save(orderDetails);
-        log.debug(orderDetails.getState());
-        log.debug(orderDetails.getState());
-        loadOrderListByState(session);
         return "redirect:/orders";
     }
 
@@ -230,10 +231,13 @@ public class OrderController {
     }
 
 
-    private Order findCurrentOrder(HttpSession session) {
-        String username = (String) session.getAttribute("username");
-        Account account = accountRepository.findByUsername(username);
+    private Order findCurrentOrder(HttpSession session, HttpServletRequest request) {
+        String token = resolveToken(request);
+        Account account = accountService.getCurrentAccount(token);
         Order order = orderRepository.findByAccountAndCompletedFalse(account);
+        if (order == null) {
+            order = orderService.createOrder(account);
+        }
         if (order == null) {
             order = orderService.createOrder(account);
             session.setAttribute("order", order);
@@ -252,5 +256,13 @@ public class OrderController {
             mapList.add(orderProductService.getProductMap(order));
         }
         return mapList;
+    }
+
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }

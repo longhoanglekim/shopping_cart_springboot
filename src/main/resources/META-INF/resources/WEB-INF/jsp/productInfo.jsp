@@ -34,10 +34,11 @@
                     <button class="button-product" id="updateProduct">Update</button>
                 </div>
                 <div style="margin-bottom: 10px">
-                    <form action="${pageContext.request.contextPath}/addProductToCart" method="post">
-                        <input type="hidden" name="id" value="${product.id}">
-                        <button type="submit" class="btn btn-success">Add to cart</button>
-                    </form>
+<%--                    <form action="${pageContext.request.contextPath}/addProductToCart" method="post">--%>
+<%--                        <input type="hidden" name="id" value="${product.id}">--%>
+<%--                        <button type="submit" class="btn btn-success">Add to cart</button>--%>
+<%--                    </form>--%>
+                    <button class="button-product" id="addToCart">Add To Cart</button>
                 </div>
                 <div>
                     <button type="submit" class="btn btn-success" onclick="deleteProduct(${product.id})">Delete</button>
@@ -94,6 +95,40 @@
                         document.open(); // Mở tài liệu mới
                         document.write(html); // Ghi nội dung HTML vào
                         document.close(); // Đóng tài liệu để hoàn tất việc render
+                    })
+                    .catch(error => {
+                        console.error('Fetch error:', error);
+                    });
+            } else {
+                console.log("Please login first");
+            }
+        }
+
+        );
+        const addToCartButton = document.getElementById('addToCart');
+        addToCartButton.addEventListener('click', function () {
+            if (checkToken()) {
+                const token = localStorage.getItem('token');
+                const id = ${product.id};
+                console.log("Add to cart");
+                fetch('${pageContext.request.contextPath}/addProductToCart?id=' + id, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.text();
+                        } else {
+                            throw new Error('Network response was not ok.');
+                        }
+                    })
+                    .then(html => {
+                        console.log('Success:', html);
+                        document.open();
+                        document.write(html);
+                        document.close();
                     })
                     .catch(error => {
                         console.error('Fetch error:', error);

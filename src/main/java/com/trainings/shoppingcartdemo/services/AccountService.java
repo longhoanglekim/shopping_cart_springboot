@@ -23,6 +23,9 @@ public class AccountService {
     @Autowired
     private AccountDetailsRepository accountDetailsRepository;
 
+    @Autowired
+    private JwtService jwtService;
+
     @Transactional
     public Account createAccount(String username, String password) {
         // Create Account
@@ -60,4 +63,8 @@ public class AccountService {
         return accountRepository.findAll();
     }
 
+    public Account getCurrentAccount(String token) {
+        String username = jwtService.extractUsername(token);
+        return accountRepository.findByUsername(username);
+    }
 }

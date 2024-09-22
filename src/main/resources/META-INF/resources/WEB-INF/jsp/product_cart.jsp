@@ -38,7 +38,8 @@
     <div class="topnav">
         <div class="topnav-right">
             <p>Total value : <span id="totalValue">${totalValue}</span></p>
-            <a href="${pageContext.request.contextPath}/confirmOrder">Confirm order</a>
+<%--            <a href="${pageContext.request.contextPath}/confirmOrder">Confirm order</a>--%>
+            <button id="confirmOrder" >Confirm order</button>
         </div>
     </div>
 </footer>
@@ -61,34 +62,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data && data.username) {
-                <%--        const name = data.username; // Gán giá trị username từ API--%>
-                <%--        console.log(name);--%>
-                <%--        // Xóa liên kết login và register cũ--%>
-                <%--        navLinks.innerHTML = '';--%>
 
-                <%--        // Sử dụng template literals để chèn giá trị `name` từ JavaScript--%>
-                <%--        const profileLinkValue = `<a class="nav-link" href="${contextPath}/profile">${name}</a>`;--%>
-
-                <%--        // Tạo phần tử `li` chứa liên kết profile--%>
-                <%--        const profileLink = document.createElement('li');--%>
-                <%--        profileLink.classList.add('nav-item');--%>
-                <%--        profileLink.innerHTML = profileLinkValue;--%>
-                <%--        navLinks.appendChild(profileLink);--%>
-
-                <%--        // Tạo phần tử giỏ hàng và logout--%>
-                <%--        const cartLink = document.createElement('li');--%>
-                <%--        cartLink.classList.add('nav-item');--%>
-                <%--        cartLink.innerHTML = `--%>
-                <%--    <a class="nav-link" href="${contextPath}/shopping_cart">--%>
-                <%--        <img src="/image/shopping-cart.png" alt="Shopping cart" width="35" height="30">--%>
-                <%--    </a>--%>
-                <%--`;--%>
-                <%--        navLinks.appendChild(cartLink);--%>
-
-                <%--        const logoutLink = document.createElement('li');--%>
-                <%--        logoutLink.classList.add('nav-item');--%>
-                <%--        logoutLink.innerHTML = `<a class="nav-link" href="${contextPath}/logout">Logout</a>`;--%>
-                <%--        navLinks.appendChild(logoutLink);--%>
                     }
                 })
                 .catch(error => {
@@ -98,5 +72,131 @@
     });
 
 </script>
+<script>
+    $(document).ready(function() {
+        function fetchFormattedPrice(price) {
+            $.ajax({
+                url: '/api/formatPrice',
+                method: 'GET',
+                data: { price: price },
+                success: function(response) {
+                    console.log("Formatted Price: " + response);
+                    $('#totalValue').text(response);  // Use the formatted price
+                },
+                error: function(xhr, status, error) {
+                    console.error("Failed to fetch formatted price");
+                }
+            });
+        }
+        // Handle the plus button click
+        $('.plus-btn').click(function() {
+            var $input = $(this).closest('.quantity-selector').find('#quantity');
+            var value = parseInt($input.val());
+            $input.val(value + 1);  // Increment the quantity
 
+            var productName = $(this).closest('tr').find('td:first').text();
+            // Corrected: Getting the current total value from the DOM and parsing it as a float
+            var currentTotal = parseFloat($('#totalValue').text().replace(/,/g, ''));
+            var productPrice = parseFloat($(this).closest('tr').data('price'));
+
+            // Calculate new total value
+            var newTotal = currentTotal + productPrice;
+
+            updateQuantity(productName, value + 1);  // Update the quantity on the server
+
+            // Fetch formatted price based on the new total value
+            fetchFormattedPrice(newTotal);
+        });
+
+        // Handle the minus button click
+        $('.minus-btn').click(function() {
+            var $input = $(this).closest('.quantity-selector').find('#quantity');
+            var value = parseInt($input.val());
+
+            var productName = $(this).closest('tr').find('td:first').text();
+
+            if (value > 1) {
+                $input.val(value - 1);
+                updateQuantity(productName, value - 1);  // Update the quantity on the server
+            } else if (value === 1) {
+                var confirmation = confirm("Are you sure you want to remove this product from your cart?");
+                if (confirmation) {
+                    $input.val(0);
+                    $(this).closest('tr').remove();  // Remove the product row
+                    updateQuantity(productName, 0);  // Update the quantity to 0 on the server
+                }
+            }
+            var currentTotal = parseFloat($('#totalValue').text().replace(/,/g, ''));
+
+            var productPrice = parseFloat($(this).closest('tr').data('price'));
+            var newTotal = currentTotal - productPrice;
+            fetchFormattedPrice(newTotal);
+        });
+
+        // Function to update quantity on the server
+        function updateQuantity(productName, quantity) {
+            $.ajax({
+                url: '/update-quantity',
+                method: 'POST',
+                data: {
+                    productName: productName,
+                    quantity: quantity
+                },
+                success: function(response) {
+                    console.log('Cập nhật thành công');
+                    // Avoid updating #totalValue from the server response to prevent overwriting the '0.00'
+                    // $('#totalValue').text(response.totalValue.toFixed(2));
+                },
+                error: function(xhr, status, error) {
+                    console.error('Cập nhật thất bại');
+                }
+            });
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('confirmOrder').addEventListener('click', function() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                fetch('/confirmOrder', {
+                    method: 'POST',
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    }
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Order confirmed successfully');
+                            fetch('/checkout', {
+                                method: 'GET',
+                                headers: {
+                                    "Authorization": "Bearer " + token
+                                }
+                            })
+                                // return html content
+                                .then(response => response.text())
+                                .then(data => {
+                                    document.open();
+                                    document.write(data);
+                                    document.close();
+                                })
+                                .catch(error => {
+                                    console.error('Error fetching orders:', error);
+                                });
+
+                        } else {
+                            alert('Failed to confirm order');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error confirming order:', error);
+                    });
+            } else {
+                alert('Please login to confirm order');
+            }
+    })
+    });
+
+</script>
 </html>
