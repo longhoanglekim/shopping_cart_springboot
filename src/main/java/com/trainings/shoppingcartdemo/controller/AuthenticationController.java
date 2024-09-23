@@ -26,13 +26,14 @@ public class AuthenticationController {
         this.authenticationService = authenticationService;
     }
 
-    @PostMapping("/signup")
+    @PostMapping("/register")
     public ResponseEntity<Account> register(@RequestBody RegisterDto registerAccountDto) {
-        Account registeredAccount = authenticationService.signup(registerAccountDto);
-        if (registeredAccount == null) {
+        // register new account with encoded password
+        Account newAccount = authenticationService.signup(registerAccountDto);
+        if (newAccount == null) {
             return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.ok(registeredAccount);
+        return ResponseEntity.ok(newAccount);
     }
 
     @PostMapping("/login")

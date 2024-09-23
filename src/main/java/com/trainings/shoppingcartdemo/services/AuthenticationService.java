@@ -37,7 +37,7 @@ public class AuthenticationService {
         if (userRepository.findByUsername(input.getUsername()) != null) {
             return null;
         }
-        return accountService.createAccount(input.getUsername(), input.getPassword());
+        return accountService.createAccount(input.getUsername(), passwordEncoder.encode(input.getPassword()));
     }
 
     public Account authenticate(LoginDto input) {
