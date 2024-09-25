@@ -47,8 +47,6 @@ public class ProductController {
                                     @PathVariable String category,
                                     ModelMap map) {
         log.debug("GET /showProduct");
-        log.debug(productRepository.search("book").get(0).getName());
-        // Store category in session
         session.setAttribute("category", category);
 
         List<Product> productList;

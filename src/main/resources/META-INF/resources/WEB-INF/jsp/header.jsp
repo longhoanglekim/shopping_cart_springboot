@@ -43,6 +43,56 @@
         button img {
             display: block; /* Remove inline spacing around the image */
         }
+        /* Container cho phần Account */
+        .account-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Nút bấm cho account (giống như tên tài khoản) */
+        .account-btn {
+            background-color: #f60;
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* CSS cho menu thả xuống */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+            z-index: 1;
+            margin-left: 10px;
+        }
+
+        /* CSS cho các item trong menu */
+        .dropdown-menu a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        /* Hiệu ứng khi hover vào menu item */
+        .dropdown-menu a:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Hiển thị menu khi hover */
+        .dropdown-menu:hover {
+            display: block;
+        }
+        .account-menu {
+            margin-left: 20px;
+        }
+        .account-menu:hover {
+            background-color: #f1f1f1;
+        }
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -193,27 +243,60 @@
             // Thêm các liên kết mới cho người dùng đã đăng nhập
             navLinks.innerHTML = `
                         <li class="nav-item">
-        <button class="nav-link btn" id="profileButton">Example Name</button>
+                            <div id="accmenu-div">
+                                <button class="nav-link btn" id="profileMenu">Example Name</button>
+                                <ul class="dropdown-menu">
+                                    <li><button class="account-menu" id="profileButton"> Profile</a></li>
+                                    <li><button class="account-menu" id="orderButton"> My purchases</a></li>
+                                </ul>
+                            </div>
                         </li>
                         <li class="nav-item">
-        <button class="nav-link btn" id="cartButton">
-            <img src="/image/shopping-cart.png" alt="Shopping cart" width="35" height="30">
-        </button>
+                            <button class="nav-link btn" id="cartButton">
+                                <img src="/image/shopping-cart.png" alt="Shopping cart" width="35" height="30">
+                            </button>
                         </li>
                         <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/logout" id="logout">Logout</a></li>
                     `;
             const username = await getName(token);  // Chờ hàm getName(token) trả về giá trị
             if (username) {
                 console.log('Username:', username);
-                document.getElementById("profileButton").textContent = username;  // Đặt tên người dùng
+                document.getElementById("profileMenu").textContent = username;  // Đặt tên người dùng
             }
             /// Thêm event listener sau khi HTML đã được chèn
+            document.getElementById('accmenu-div').addEventListener('mouseenter', function () {
+                document.querySelector('.dropdown-menu').style.display = 'block';  // Hiển thị menu
+            });
+            document.getElementById('accmenu-div').addEventListener('mouseleave', function () {
+                document.querySelector('.dropdown-menu').style.display = 'none';  // Ẩn menu
+            });
             document.getElementById('profileButton').addEventListener('click', function () {
-                console.log('Button clicked'); // Kiểm tra xem event click có hoạt động không
                 fetch('${pageContext.request.contextPath}/profile', {
-                    method: 'GET',  // Dùng GET vì bạn đang lấy HTML
+                    method: 'GET',
                     headers: {
-                        'Authorization': 'Bearer ' + token // Thêm token vào header
+                        "Authorization": "Bearer " + token
+                    }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.text(); // Lấy dữ liệu dưới dạng HTML (text)
+                        } else {
+                            throw new Error('Network response was not ok.');
+                        }
+                    })
+                    .then(html => {
+                        console.log('Success:', html);
+                        // Hiển thị HTML hoặc chuyển hướng trang
+                        document.open(); // Mở tài liệu mới
+                        document.write(html); // Ghi nội dung HTML vào
+                        document.close(); // Đóng tài liệu để hoàn tất việc render
+                    })
+            });
+            document.getElementById("orderButton").addEventListener('click', function () {
+                fetch('${pageContext.request.contextPath}/orders', {
+                    method: 'GET',
+                    headers: {
+                        "Authorization": "Bearer " + token
                     }
                 })
                     .then(response => {
@@ -230,9 +313,6 @@
                         document.write(html); // Ghi nội dung HTML vào
                         document.close(); // Đóng tài liệu để hoàn tất việc render
                     })
-                    .catch(error => {
-                        console.error('Fetch error:', error);
-                    });
             });
             document.getElementById('cartButton').addEventListener('click', function () {
                 console.log('Button clicked'); // Kiểm tra xem event click có hoạt động không
@@ -278,6 +358,5 @@
     });
 
 </script>
-
 </body>
 </html>

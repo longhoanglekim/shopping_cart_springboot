@@ -11,7 +11,7 @@
 </header>
 <body>
 Username : <span id="username"></span><br>
-Price in case : ${account.getFormattedCash()} VND
+Price in case : ${cash} VND
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const token = localStorage.getItem('token');

@@ -81,19 +81,6 @@
                 })
                 .catch(error => console.error('Error:', error));
         }
-        fetch('/demo-api/hello', {
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + token
-            }
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Secure data received');
-            })
-            .catch(error => {
-                console.error('Error fetching secure data:', error);
-            });
     });
 </script>
 <script>
