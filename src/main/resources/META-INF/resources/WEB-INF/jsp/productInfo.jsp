@@ -34,10 +34,6 @@
                     <button class="button-product" id="updateProduct">Update</button>
                 </div>
                 <div style="margin-bottom: 10px">
-<%--                    <form action="${pageContext.request.contextPath}/addProductToCart" method="post">--%>
-<%--                        <input type="hidden" name="id" value="${product.id}">--%>
-<%--                        <button type="submit" class="btn btn-success">Add to cart</button>--%>
-<%--                    </form>--%>
                     <button class="button-product" id="addToCart">Add To Cart</button>
                 </div>
                 <div>

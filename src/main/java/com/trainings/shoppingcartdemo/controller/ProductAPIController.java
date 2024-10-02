@@ -23,9 +23,6 @@ public class ProductAPIController {
 
     @GetMapping("/api/product/categories")
     public List<String> getAllCategories() {
-        for (String category : productRepository.getCategoriesList()) {
-            log.debug(category);
-        }
         return productRepository.getCategoriesList();
     }
 

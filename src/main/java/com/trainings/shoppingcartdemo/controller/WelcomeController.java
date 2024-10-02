@@ -1,5 +1,6 @@
 package com.trainings.shoppingcartdemo.controller;
 
+import com.trainings.shoppingcartdemo.models.Product;
 import com.trainings.shoppingcartdemo.services.AccountService;
 import com.trainings.shoppingcartdemo.services.JwtService;
 import jakarta.servlet.http.HttpSession;
@@ -9,6 +10,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @Controller
 @Slf4j
 public class WelcomeController {
@@ -28,7 +32,12 @@ public class WelcomeController {
             String username = authentication.getName();
             session.setAttribute("username", username);
         }
-        map.put("categories", productAPIController.getAllCategories());
+        List<String> categories = productAPIController.getAllCategories();
+        // lower all categories
+        for (int i = 0; i < categories.size(); i++) {
+            categories.set(i, categories.get(i).toLowerCase());
+        }
+        map.put("categories", categories);
         log.debug("Get welcome");
         return "welcome_user";
     }

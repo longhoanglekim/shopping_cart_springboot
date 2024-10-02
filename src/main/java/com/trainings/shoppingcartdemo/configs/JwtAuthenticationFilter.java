@@ -3,6 +3,7 @@ package com.trainings.shoppingcartdemo.configs;
 import com.trainings.shoppingcartdemo.services.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -54,15 +56,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             }
+            // add token to header
+            response.addHeader("Authorization", "Bearer " + token);
+
         }
 
         filterChain.doFilter(request, response);
     }
 
     private String resolveToken(HttpServletRequest request) {
+        String token = null;
+
+        // Get from Authorization header if available
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+            token = bearerToken.substring(7);
+        }
+
+        if (!Objects.equals(request.getRequestURI(), "/login") && !Objects.equals(request.getRequestURI(), "/register")) {
+            // Get from cookies if available
+            if (token == null) {
+                token = extractTokenFromCookies(request.getCookies());
+            }
+        }
+
+        return token;
+    }
+
+    private String extractTokenFromCookies(Cookie[] cookies) {
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("jwtToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
         }
         return null;
     }

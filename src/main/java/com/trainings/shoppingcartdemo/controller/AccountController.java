@@ -3,8 +3,10 @@ package com.trainings.shoppingcartdemo.controller;
 import com.trainings.shoppingcartdemo.models.Account;
 import com.trainings.shoppingcartdemo.repositories.AccountRepository;
 import com.trainings.shoppingcartdemo.services.AccountService;
+import jakarta.servlet.http.Cookie;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,13 +24,17 @@ public class AccountController {
     }
 
     @GetMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
     public String goProfilePage(ModelMap map, @RequestHeader("Authorization") String authHeader) {
         log.debug("Profile req");
         String token = authHeader.substring(7);
+
         Account account = accountService.getCurrentAccount(token);
         map.put("cash", account.getCashInWallet());
         return "account_profile";
     }
+
+
 
 
 }

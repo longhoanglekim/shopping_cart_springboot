@@ -127,8 +127,7 @@
         <a class="navbar-brand" href="${pageContext.request.contextPath}/welcome">JusEnuf</a>
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/welcome">Home</a></li>
-            <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/showListProduct/all">All
-                products</a></li>
+            <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/showListProduct/all">All products</a></li>
         </ul>
 
         <div class="mx-auto" style="width: 50%;">
@@ -271,12 +270,13 @@
                 document.querySelector('.dropdown-menu').style.display = 'none';  // Ẩn menu
             });
             document.getElementById('profileButton').addEventListener('click', function () {
+                console.log('Button clicked'); // Kiểm tra xem event click có hoạt động không
                 fetch('${pageContext.request.contextPath}/profile', {
                     method: 'GET',
                     headers: {
-                        "Authorization": "Bearer " + token
+                        'Authorization': 'Bearer ' + token // Thêm token vào header
                     }
-                    })
+                })
                     .then(response => {
                         if (response.ok) {
                             return response.text(); // Lấy dữ liệu dưới dạng HTML (text)
@@ -286,11 +286,16 @@
                     })
                     .then(html => {
                         console.log('Success:', html);
+
                         // Hiển thị HTML hoặc chuyển hướng trang
                         document.open(); // Mở tài liệu mới
                         document.write(html); // Ghi nội dung HTML vào
                         document.close(); // Đóng tài liệu để hoàn tất việc render
+
                     })
+                    .catch(error => {
+                        console.error('Fetch error:', error);
+                    });
             });
             document.getElementById("orderButton").addEventListener('click', function () {
                 fetch('${pageContext.request.contextPath}/orders', {

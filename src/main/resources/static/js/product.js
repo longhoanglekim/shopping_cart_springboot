@@ -13,7 +13,6 @@ function getProductListByCategory(category) {
                 // Lấy productContainer bằng ID kết hợp với category
                 const productContainer = document.getElementById("productContainer-" + category);
 
-                // Kiểm tra nếu phần tử productContainer tồn tại
                 if (productContainer) {
                     productContainer.innerHTML = '';
                     productList.forEach(product => {

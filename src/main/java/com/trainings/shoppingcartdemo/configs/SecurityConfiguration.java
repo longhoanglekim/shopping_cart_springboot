@@ -33,6 +33,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable()) // Disable CSRF protection
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/login", "/welcome", "/register", "/WEB-INF/**", "/css/**", "/js/**", "/image/**",
                                 "/api/**", "/showListProduct/**", "/productInfo", "/search").permitAll()  // Cho phép truy cập không cần xác thực tới tài nguyên tĩnh
