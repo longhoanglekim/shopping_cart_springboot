@@ -1,6 +1,7 @@
 package com.trainings.shoppingcartdemo.configs;
 
 import com.trainings.shoppingcartdemo.services.JwtService;
+import com.trainings.shoppingcartdemo.utils.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -43,17 +44,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String requestURI = request.getRequestURI();
-        String token = resolveToken(request);
+        String token = JwtUtil.getToken(request);
 
         // Nếu token tồn tại và đã hết hạn, xóa cookie
         if (token != null) {
             try {
                 if (!jwtService.isTokenValid(token)) {
-                    clearJwtTokenCookie(response);
+                    JwtUtil.clearJwtTokenCookie(response);
                 }
             } catch (ExpiredJwtException e) {
                 log.warn("JWT token is expired: {}", e.getMessage());
-                clearJwtTokenCookie(response);
+                JwtUtil.clearJwtTokenCookie(response);
             }
         }
 
@@ -80,24 +81,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String resolveToken(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("jwtToken".equals(cookie.getName())) {
-                    log.debug("Found jwtToken cookie");
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
-    }
 
-    private void clearJwtTokenCookie(HttpServletResponse response) {
-        Cookie newCookie = new Cookie("jwtToken", null);
-        newCookie.setMaxAge(0); // Đặt thời gian sống bằng 0 để trình duyệt xóa cookie
-        newCookie.setPath("/"); // Đảm bảo cookie được xóa trên toàn bộ domain
-        response.addCookie(newCookie);
-        log.debug("Cleared jwtToken cookie due to expired or invalid token");
-    }
 }
