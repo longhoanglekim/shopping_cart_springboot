@@ -86,7 +86,94 @@
         if (localStorage.getItem('token')) {
             localStorage.removeItem('token');
         }
-        document.getElementById('loginForm').addEventListener('click', function (event) {
+        document.getElementById('loginForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Ngăn không cho form submit mặc định
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Gửi yêu cầu đăng nhập qua fetch API
+            fetch('/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Login failed');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.token) {
+                        // Lưu token vào localStorage sau khi đăng nhập thành công
+                        <%--console.log('Token:', data.token);--%>
+                        <%--localStorage.setItem('token', data.token);--%>
+                        <%--const token = data.token;--%>
+                        <%--document.cookie = `jwtToken=${token}; path=/; secure; HttpOnly;`;--%>
+
+                        // Chuyển hướng đến trang welcome hoặc trang khác sau khi đăng nhập thành công
+                        window.location.href = '/welcome';
+                    } else {
+                        // Hiển thị thông báo lỗi nếu không nhận được token
+                        document.getElementById('errorMessage').style.display = 'block';
+                        setTimeout(() => {
+                            document.getElementById('errorMessage').style.display = 'none';
+                        }, 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('errorMessage').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('errorMessage').style.display = 'none';
+                    }, 2000);
+                });
+        });
+    });
+
+
+
+</script>
+<<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log("Login page loaded");
+
+        // Xóa token từ localStorage nếu tồn tại
+        if (localStorage.getItem('token')) {
+            console.log("Token found in localStorage, removing it.");
+            localStorage.removeItem('token');
+        }
+
+        // Hàm để xóa cookie theo tên
+        function deleteCookie(name) {
+            document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+        }
+
+        // Lấy tất cả các cookie và xóa chúng
+        function deleteAllCookies() {
+            const cookies = document.cookie.split(";");
+
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i];
+                const eqPos = cookie.indexOf("=");
+                const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+
+                // Xóa cookie
+                deleteCookie(name.trim());
+            }
+        }
+
+        // Xóa tất cả các cookie khi vào trang
+        deleteAllCookies();
+
+        // Thêm sự kiện submit cho form đăng nhập
+        document.getElementById('loginForm').addEventListener('submit', function (event) {
             event.preventDefault(); // Ngăn không cho form submit mặc định
 
             const username = document.getElementById('username').value;
@@ -114,9 +201,7 @@
                         // Lưu token vào localStorage sau khi đăng nhập thành công
                         console.log('Token:', data.token);
                         localStorage.setItem('token', data.token);
-                        const token = data.token;
-                        // Lưu token vào cookie
-                        document.cookie = `jwtToken=${data.token}; path=/; secure; HttpOnly`;
+
                         // Chuyển hướng đến trang welcome hoặc trang khác sau khi đăng nhập thành công
                         window.location.href = '/welcome';
                     } else {
@@ -136,9 +221,7 @@
                 });
         });
     });
-
-
-
 </script>
+
 </body>
 </html>

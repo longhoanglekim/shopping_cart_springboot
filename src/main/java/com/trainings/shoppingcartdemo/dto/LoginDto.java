@@ -1,9 +1,5 @@
 package com.trainings.shoppingcartdemo.dto;
 
-import org.springframework.security.core.userdetails.UserDetails;
-
-import java.util.Map;
-
 public class LoginDto {
     private String username;
     private String password;
@@ -16,7 +12,7 @@ public class LoginDto {
         this.password = password;
     }
 
-    public Map<String, Object> getUsername() {
+    public String getUsername() {
         return username;
     }
 
@@ -24,7 +20,7 @@ public class LoginDto {
         this.username = username;
     }
 
-    public UserDetails getPassword() {
+    public String getPassword() {
         return password;
     }
 

@@ -1,6 +1,7 @@
 package com.trainings.shoppingcartdemo.configs;
 
 import com.trainings.shoppingcartdemo.services.JwtService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -9,88 +10,94 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
-import java.util.Objects;
+import java.util.List;
 
 @Slf4j
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-
     private final UserDetailsService userDetailsService;
+    private final List<String> publicUrls = List.of(
+            "/auth/**", "/login", "/welcome", "/register", "/WEB-INF/**", "/css/**", "/js/**", "/image/**",
+            "/api/**", "/showListProduct/**", "/productInfo", "/search"
+    );
 
     public JwtAuthenticationFilter(
             JwtService jwtService,
-            UserDetailsService userDetailsService,
-            HandlerExceptionResolver handlerExceptionResolver
+            UserDetailsService userDetailsService
     ) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
     }
 
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        String requestURI = request.getRequestURI();
         String token = resolveToken(request);
-        log.debug("Token of " + request.getRequestURI() + " : " + token);
-        if (token != null && jwtService.isTokenValid(token)) {
-            String username = jwtService.extractUsername(token);
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                if (jwtService.isTokenValid(token, userDetails)) {
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(auth);
+
+        // Nếu token tồn tại và đã hết hạn, xóa cookie
+        if (token != null) {
+            try {
+                if (!jwtService.isTokenValid(token)) {
+                    clearJwtTokenCookie(response);
+                }
+            } catch (ExpiredJwtException e) {
+                log.warn("JWT token is expired: {}", e.getMessage());
+                clearJwtTokenCookie(response);
+            }
+        }
+
+        log.debug("Token of " + requestURI + " : " + token);
+        try {
+            if (token != null && jwtService.isTokenValid(token)) {
+                log.debug("Token :" + token);
+                String username = jwtService.extractUsername(token);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    if (jwtService.isTokenValid(token, userDetails)) {
+                        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    }
                 }
             }
-            // add token to header
-            response.addHeader("Authorization", "Bearer " + token);
-
+        } catch (ExpiredJwtException e) {
+            log.warn("JWT token is expired: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "JWT token is expired");
+            return;
         }
 
         filterChain.doFilter(request, response);
     }
 
     private String resolveToken(HttpServletRequest request) {
-        String token = null;
-
-        // Get from Authorization header if available
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            token = bearerToken.substring(7);
-        }
-
-        if (!Objects.equals(request.getRequestURI(), "/login") && !Objects.equals(request.getRequestURI(), "/register")) {
-            // Get from cookies if available
-            if (token == null) {
-                token = extractTokenFromCookies(request.getCookies());
-            }
-        }
-
-        return token;
-    }
-
-    private String extractTokenFromCookies(Cookie[] cookies) {
+        Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("jwtToken".equals(cookie.getName())) {
+                    log.debug("Found jwtToken cookie");
                     return cookie.getValue();
                 }
             }
         }
         return null;
+    }
+
+    private void clearJwtTokenCookie(HttpServletResponse response) {
+        Cookie newCookie = new Cookie("jwtToken", null);
+        newCookie.setMaxAge(0); // Đặt thời gian sống bằng 0 để trình duyệt xóa cookie
+        newCookie.setPath("/"); // Đảm bảo cookie được xóa trên toàn bộ domain
+        response.addCookie(newCookie);
+        log.debug("Cleared jwtToken cookie due to expired or invalid token");
     }
 }

@@ -31,31 +31,27 @@ public class AuthenticationController {
     @PostMapping("/register")
     public ResponseEntity<Account> register(@RequestBody RegisterDto registerAccountDto) {
         // register new account with encoded password
+
         Account newAccount = authenticationService.signup(registerAccountDto);
         if (newAccount == null) {
             return ResponseEntity.badRequest().build();
         }
-
         return ResponseEntity.ok(newAccount);
     }
 
-    @PostMapping("/auth/login")
-    public ResponseEntity<?> login(@RequestBody LoginDto loginRequest, HttpServletResponse response) {
-        // Tạo token
-        String token = jwtService.generateToken(loginRequest.getUsername(), loginRequest.getPassword());
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginDto loginUserDto, HttpServletResponse response) {
+        Account authenticatedUser = authenticationService.authenticate(loginUserDto);
 
-        // Tạo cookie chứa token
-        Cookie jwtCookie = new Cookie("jwtToken", token);
-        jwtCookie.setHttpOnly(true); // Đảm bảo cookie không thể bị truy cập bởi JavaScript
-        jwtCookie.setSecure(true); // Cookie chỉ được gửi qua HTTPS
-        jwtCookie.setPath("/"); // Cookie có hiệu lực cho toàn bộ ứng dụng
-        jwtCookie.setMaxAge(60 * 60 * 24); // Cookie hết hạn sau 1 ngày
-
-        // Thêm cookie vào response
+        String jwtToken = jwtService.generateToken(authenticatedUser);
+        Cookie jwtCookie = new Cookie("jwtToken", jwtToken);
+        jwtCookie.setHttpOnly(true); // Không thể truy cập từ JavaScript
+        jwtCookie.setSecure(true); // Chỉ gửi qua HTTPS
+        jwtCookie.setPath("/"); // Có hiệu lực với toàn bộ ứng dụng
+        jwtCookie.setMaxAge(60 * 60 * 24); // Thời gian sống của cookie: 1 ngày
         response.addCookie(jwtCookie);
+        LoginResponse loginResponse = new LoginResponse().setToken(jwtToken).setExpiresIn(jwtService.getExpirationTime());
+        return ResponseEntity.ok(loginResponse);
 
-        // Trả về response thành công
-        return ResponseEntity.ok("Login successful");
     }
-
 }

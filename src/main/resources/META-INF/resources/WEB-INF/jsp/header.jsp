@@ -96,7 +96,7 @@
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const token = localStorage.getItem('token');
+            const token = getCookie('jwtToken');
             console.log("Header token :" + token);
             if (token) {
 
@@ -231,7 +231,8 @@
 <script>
     document.addEventListener("DOMContentLoaded", async function () {
         console.log('Header script loaded');
-        const token = localStorage.getItem('token');  // Kiểm tra token từ localStorage
+        const token = getCookie("jwtToken");
+
         const navLinks = document.getElementById('nav-links');  // Lấy phần tử nav chứa các liên kết
         console.log(token);
         // Nếu có token, gọi API để lấy thông tin người dùng và cập nhật header

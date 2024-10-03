@@ -25,11 +25,10 @@ public class AccountController {
 
     @GetMapping("/profile")
     @PreAuthorize("isAuthenticated()")
-    public String goProfilePage(ModelMap map, @RequestHeader("Authorization") String authHeader) {
+    public String goProfilePage(ModelMap map) {
         log.debug("Profile req");
-        String token = authHeader.substring(7);
 
-        Account account = accountService.getCurrentAccount(token);
+        Account account = accountRepository.findByUsername("long");
         map.put("cash", account.getCashInWallet());
         return "account_profile";
     }
