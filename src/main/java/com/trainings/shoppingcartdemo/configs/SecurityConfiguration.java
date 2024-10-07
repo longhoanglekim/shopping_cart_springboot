@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -35,8 +36,9 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable()) // Disable CSRF protection
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/login", "/welcome", "/register", "/WEB-INF/**", "/css/**", "/js/**", "/image/**",
-                                "/api/**", "/showListProduct/**", "/productInfo", "/search").permitAll()  // Cho phép truy cập không cần xác thực tới tài nguyên tĩnh
+                        .requestMatchers("/auth/**", "/login", "/welcome", "/register",
+                                "/WEB-INF/**", "/css/**", "/js/**", "/image/**",
+                                "/api/**", "/showListProduct/**", "/productInfo", "/search", "/error").permitAll()  // Cho phép truy cập không cần xác thực tới tài nguyên tĩnh
                         .requestMatchers("/profile", "/shopping_cart").authenticated() // Chỉ cho phép người dùng có quyền USER truy cập
                         .anyRequest().authenticated())  // Bảo vệ các endpoint khác
                 .sessionManagement(session -> session
@@ -46,7 +48,6 @@ public class SecurityConfiguration {
                         .defaultSuccessUrl("/welcome", true) // Redirect to welcome page after successful login
                         .failureUrl("/login?error=true")
                         .permitAll())
-
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // Adding JWT filter before the default authentication filter
 

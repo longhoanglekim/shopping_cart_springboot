@@ -22,6 +22,9 @@
             margin-top: 50px;
         }
     </style>
+    <script>
+
+    </script>
 </head>
 <header>
     <jsp:include page="header.jsp" flush="true"/>
@@ -144,32 +147,29 @@
     document.addEventListener('DOMContentLoaded', function () {
         console.log("Login page loaded");
 
-        // Xóa token từ localStorage nếu tồn tại
-        if (localStorage.getItem('token')) {
-            console.log("Token found in localStorage, removing it.");
-            localStorage.removeItem('token');
-        }
+
 
         // Hàm để xóa cookie theo tên
         function deleteCookie(name) {
             document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
         }
 
-        // Lấy tất cả các cookie và xóa chúng
         function deleteAllCookies() {
+            // Lấy tất cả cookie của trang dưới dạng một chuỗi
             const cookies = document.cookie.split(";");
 
+            // Duyệt qua từng cookie và xóa nó
             for (let i = 0; i < cookies.length; i++) {
                 const cookie = cookies[i];
                 const eqPos = cookie.indexOf("=");
-                const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+                const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
 
-                // Xóa cookie
-                deleteCookie(name.trim());
+                // Xóa cookie bằng cách đặt giá trị hết hạn trong quá khứ
+                document.cookie = name.trim() + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/";
             }
         }
 
-        // Xóa tất cả các cookie khi vào trang
+        // Gọi hàm để xóa tất cả cookie khi trang đăng nhập được tải
         deleteAllCookies();
 
         // Thêm sự kiện submit cho form đăng nhập

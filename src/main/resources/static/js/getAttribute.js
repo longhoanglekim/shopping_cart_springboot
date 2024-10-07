@@ -2,10 +2,6 @@ async function getName(token) {
     try {
         const response = await fetch('/api/jwt/getName', {
             method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            }
         });
 
         const data = await response.json();
@@ -22,11 +18,25 @@ async function getName(token) {
         return null;
     }
 }
-function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-        return parts.pop().split(';').shift();
+async function getToken() {
+    try {
+        const response = await fetch('/api/jwt/getToken', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data && data.token) {
+            return data.token;
+        } else {
+            console.error('No token found in response');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching token:', error);
+        return null;
     }
-    return null;
 }

@@ -43,6 +43,7 @@
         button img {
             display: block; /* Remove inline spacing around the image */
         }
+
         /* Container cho phần Account */
         .account-dropdown {
             position: relative;
@@ -65,7 +66,7 @@
             position: absolute;
             background-color: white;
             min-width: 160px;
-            box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
             z-index: 1;
             margin-left: 10px;
         }
@@ -87,38 +88,16 @@
         .dropdown-menu:hover {
             display: block;
         }
+
         .account-menu {
             margin-left: 20px;
         }
+
         .account-menu:hover {
             background-color: #f1f1f1;
         }
     </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const token = getCookie('jwtToken');
-            console.log("Header token :" + token);
-            if (token) {
 
-                fetch('api/jwt/getName', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        // Đặt tên người dùng vào welcome text
-                        if (data) {
-                            document.getElementById('username').innerText = data.username;
-                        }
-                    })
-            } else {
-                document.getElementById('profileContainer').innerHTML = '<h3>Please login first.</h3>';
-            }
-        });
-    </script>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -127,7 +106,8 @@
         <a class="navbar-brand" href="${pageContext.request.contextPath}/welcome">JusEnuf</a>
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/welcome">Home</a></li>
-            <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/showListProduct/all">All products</a></li>
+            <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/showListProduct/all">All
+                products</a></li>
         </ul>
 
         <div class="mx-auto" style="width: 50%;">
@@ -153,8 +133,37 @@
     </div>
 </nav>
 
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        // Ví dụ: Lấy giá trị của cookie có tên là 'jwtToken'
+        // get token from asyn function
+        const jwtToken = await getToken();
+        console.log("Token :" + jwtToken);
+        if (jwtToken) {
+            console.log("Set name");
+            fetch('api/jwt/getName', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken,
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Đặt tên người dùng vào welcome text
+                    if (data) {
+                        document.getElementById('username').innerText = data.username;
+                    }
+                })
+        } else {
+            document.getElementById('profileContainer').innerHTML = '<h3>Please login first.</h3>';
+        }
+    });
+</script>
+
 <script src="/js/bootstrap.min.js"></script>
 <script src="/js/jquery.min.js"></script>
+
 <script>
     let selectedStrings = [];
     let suggestedItems = [];
@@ -231,7 +240,7 @@
 <script>
     document.addEventListener("DOMContentLoaded", async function () {
         console.log('Header script loaded');
-        const token = getCookie("jwtToken");
+        const token = await getToken("jwtToken");
 
         const navLinks = document.getElementById('nav-links');  // Lấy phần tử nav chứa các liên kết
         console.log(token);
@@ -242,15 +251,15 @@
 
             // Thêm các liên kết mới cho người dùng đã đăng nhập
             navLinks.innerHTML = `
-                        <li class="nav-item">
-                            <div id="accmenu-div">
+                        <div id="accmenu-div">
+                             <li class="nav-item account-dropdown">
                                 <button class="nav-link btn" id="profileMenu">Example Name</button>
-                                <ul class="dropdown-menu">
-                                    <li><button class="account-menu" id="profileButton"> Profile</a></li>
-                                    <li><button class="account-menu" id="orderButton"> My purchases</a></li>
+                                <ul class="dropdown-menu" id="profileDropdown">
+                                    <li><a class="account-menu" id="profileButton" href="${pageContext.request.contextPath}/profile">Profile</a></li>
+                                    <li><a class="account-menu" id="orderButton" href="${pageContext.request.contextPath}/orders">My purchases</a></li>
                                 </ul>
-                            </div>
-                        </li>
+                            </li>
+                         </div>
                         <li class="nav-item">
                             <button class="nav-link btn" id="cartButton">
                                 <img src="/image/shopping-cart.png" alt="Shopping cart" width="35" height="30">
@@ -265,60 +274,11 @@
             }
             /// Thêm event listener sau khi HTML đã được chèn
             document.getElementById('accmenu-div').addEventListener('mouseenter', function () {
+                console.log('Mouse entered');  // Kiểm tra xem event mouse enter có hoạt động không
                 document.querySelector('.dropdown-menu').style.display = 'block';  // Hiển thị menu
             });
             document.getElementById('accmenu-div').addEventListener('mouseleave', function () {
                 document.querySelector('.dropdown-menu').style.display = 'none';  // Ẩn menu
-            });
-            document.getElementById('profileButton').addEventListener('click', function () {
-                console.log('Button clicked'); // Kiểm tra xem event click có hoạt động không
-                fetch('${pageContext.request.contextPath}/profile', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer ' + token // Thêm token vào header
-                    }
-                })
-                    .then(response => {
-                        if (response.ok) {
-                            return response.text(); // Lấy dữ liệu dưới dạng HTML (text)
-                        } else {
-                            throw new Error('Network response was not ok.');
-                        }
-                    })
-                    .then(html => {
-                        console.log('Success:', html);
-
-                        // Hiển thị HTML hoặc chuyển hướng trang
-                        document.open(); // Mở tài liệu mới
-                        document.write(html); // Ghi nội dung HTML vào
-                        document.close(); // Đóng tài liệu để hoàn tất việc render
-
-                    })
-                    .catch(error => {
-                        console.error('Fetch error:', error);
-                    });
-            });
-            document.getElementById("orderButton").addEventListener('click', function () {
-                fetch('${pageContext.request.contextPath}/orders', {
-                    method: 'GET',
-                    headers: {
-                        "Authorization": "Bearer " + token
-                    }
-                })
-                    .then(response => {
-                        if (response.ok) {
-                            return response.text(); // Lấy dữ liệu dưới dạng HTML (text)
-                        } else {
-                            throw new Error('Network response was not ok.');
-                        }
-                    })
-                    .then(html => {
-                        console.log('Success:', html);
-                        // Hiển thị HTML hoặc chuyển hướng trang
-                        document.open(); // Mở tài liệu mới
-                        document.write(html); // Ghi nội dung HTML vào
-                        document.close(); // Đóng tài liệu để hoàn tất việc render
-                    })
             });
             document.getElementById('cartButton').addEventListener('click', function () {
                 console.log('Button clicked'); // Kiểm tra xem event click có hoạt động không
@@ -347,7 +307,8 @@
                     });
             });
 
-        } else {
+        }
+        if (!token) {
             // Nếu không có token, hiển thị liên kết login và register
             navLinks.innerHTML = `
                         <li class="nav-item"><a href="${pageContext.request.contextPath}/login" class="nav-link" id="login-link">Login</a></li>
