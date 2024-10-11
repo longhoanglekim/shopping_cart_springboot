@@ -48,6 +48,7 @@
         .account-dropdown {
             position: relative;
             display: inline-block;
+            margin-left : 1px;
         }
 
         /* Nút bấm cho account (giống như tên tài khoản) */
@@ -65,10 +66,11 @@
             display: none;
             position: absolute;
             background-color: white;
-            min-width: 160px;
+            min-width: 130px;
             box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
             z-index: 1;
             margin-left: 10px;
+            left : -20px;
         }
 
         /* CSS cho các item trong menu */
@@ -77,6 +79,7 @@
             padding: 12px 16px;
             text-decoration: none;
             display: block;
+            font-size: 14px;
         }
 
         /* Hiệu ứng khi hover vào menu item */
@@ -90,11 +93,12 @@
         }
 
         .account-menu {
-            margin-left: 20px;
+            margin-left: 3px;
         }
 
+
         .account-menu:hover {
-            background-color: #f1f1f1;
+            background-color: lightgrey;
         }
     </style>
 
@@ -254,7 +258,7 @@
                         <div id="accmenu-div">
                              <li class="nav-item account-dropdown">
                                 <button class="nav-link btn" id="profileMenu">Example Name</button>
-                                <ul class="dropdown-menu" id="profileDropdown">
+                                <ul class="dropdown-menu" id="dropdown-menu">
                                     <li><a class="account-menu" id="profileButton" href="${pageContext.request.contextPath}/profile">Profile</a></li>
                                     <li><a class="account-menu" id="orderButton" href="${pageContext.request.contextPath}/orders">My purchases</a></li>
                                 </ul>
@@ -283,10 +287,7 @@
             document.getElementById('cartButton').addEventListener('click', function () {
                 console.log('Button clicked'); // Kiểm tra xem event click có hoạt động không
                 fetch('${pageContext.request.contextPath}/shopping_cart', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer ' + token // Thêm token vào header
-                    }
+                    method: 'GET'
                 })
                     .then(response => {
                         if (response.ok) {

@@ -10,14 +10,12 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RequestMapping("/auth")
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 public class AuthenticationController {
     private final JwtService jwtService;
 
@@ -45,10 +43,10 @@ public class AuthenticationController {
 
         String jwtToken = jwtService.generateToken(authenticatedUser);
         Cookie jwtCookie = new Cookie("jwtToken", jwtToken);
-        jwtCookie.setHttpOnly(true); // Không thể truy cập từ JavaScript
-        jwtCookie.setSecure(true); // Chỉ gửi qua HTTPS
-        jwtCookie.setPath("/"); // Có hiệu lực với toàn bộ ứng dụng
-        jwtCookie.setMaxAge(60 * 60 * 24); // Thời gian sống của cookie: 1 ngày
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setSecure(true);
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(60 * 60 * 24);
         response.addCookie(jwtCookie);
         LoginResponse loginResponse = new LoginResponse().setToken(jwtToken).setExpiresIn(jwtService.getExpirationTime());
         return ResponseEntity.ok(loginResponse);

@@ -49,6 +49,7 @@
             </table>
             <input type="hidden" id="token" value="">
             <input type="submit" value="Login" class="btn btn-success">
+            <p>Or login with admin account <span><a href="${pageContext.request.contextPath}/admin_login" class="button-green">Admin login</a> </span></p>
         </form>
     </div>
     <p class="icon-link">Haven't got an account?</p>

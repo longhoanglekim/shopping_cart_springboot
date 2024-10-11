@@ -36,7 +36,7 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable()) // Disable CSRF protection
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/login", "/welcome", "/register",
+                        .requestMatchers("/auth/**", "/login", "/welcome", "/register","/ws/**",
                                 "/WEB-INF/**", "/css/**", "/js/**", "/image/**",
                                 "/api/**", "/showListProduct/**", "/productInfo", "/search", "/error").permitAll()  // Cho phép truy cập không cần xác thực tới tài nguyên tĩnh
                         .requestMatchers("/profile", "/shopping_cart").authenticated() // Chỉ cho phép người dùng có quyền USER truy cập
@@ -59,11 +59,13 @@ public class SecurityConfiguration {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8080"));
+        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+        configuration.setAllowCredentials(true);
         return source;
     }
+
 }

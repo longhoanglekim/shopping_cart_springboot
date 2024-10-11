@@ -7,6 +7,7 @@ import com.trainings.shoppingcartdemo.services.AccountService;
 import com.trainings.shoppingcartdemo.services.OrderProductService;
 import com.trainings.shoppingcartdemo.services.OrderService;
 import com.trainings.shoppingcartdemo.services.PriceFormattingService;
+import com.trainings.shoppingcartdemo.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +59,7 @@ public class OrderController {
     @GetMapping("/shopping_cart")
     public String goShoppingCartPage(HttpServletRequest request, HttpSession session) {
         log.debug("GET /shopping_cart");
-        String token = resolveToken(request);
+        String token = JwtUtil.getToken(request);
         Account account = accountService.getCurrentAccount(token);
         Order order = orderRepository.findByAccountAndCompletedFalse(account);
         if (order == null) {
